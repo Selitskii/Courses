@@ -13,4 +13,7 @@ class OperationLocalSource:OperationReposytory {
         operations.add(operation)
     }
 
+    override fun deleteOperation(position: Int) {
+        operations.removeAt(position)
+    }
 }

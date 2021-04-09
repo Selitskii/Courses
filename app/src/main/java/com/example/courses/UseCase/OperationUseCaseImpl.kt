@@ -6,4 +6,8 @@ class OperationUseCaseImpl(
     override fun getOperation(): MutableList<Operation> {
         return  operationReposytory.getOperation()
     }
+
+    override fun deleteOperation(position: Int) {
+        operationReposytory.deleteOperation(position)
+    }
 }
