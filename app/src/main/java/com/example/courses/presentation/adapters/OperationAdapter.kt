@@ -13,12 +13,12 @@ import com.example.clearav.domain.UseCase.OperationUseCase
 import com.example.clearav.presentation.viewModel.MainViewModel
 import com.example.courses.Dependencies
 import com.example.courses.R
+import com.example.courses.presentation.adapters.ItemClickListener
 
 class OperationAdapter internal constructor(
     private var data: MutableList<Operation>
 ) : RecyclerView.Adapter<OperationAdapter.ViewHolder>() {
-    private val operationUseCase: OperationUseCase by lazy { Dependencies.getOperationUseCase()}
-    //private var listener: ItemClickListener? = null
+    private var listener: ItemClickListener? = null
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(viewGroup.context)
@@ -32,10 +32,7 @@ class OperationAdapter internal constructor(
         val item = data[position]
         viewHolder.text.text=item.toString()
         viewHolder.itemView.setOnClickListener {
-            operationUseCase.deleteOperation(position)
-           setData(operationUseCase.getOperation())
-        // data.removeAt(position)
-            //notifyItemRemoved(position)
+            listener?.onClick(item)
         }
     }
 
@@ -52,9 +49,9 @@ class OperationAdapter internal constructor(
     }
 
 
-//    fun setListener(itemClickListener: ItemClickListener?) {
-//        listener = itemClickListener
-//    }
+    fun setListener(itemClickListener: ItemClickListener?) {
+        listener = itemClickListener
+   }
 //
 //    fun cellChanged(position: Int, value: Int) {
 //        data[position] = value

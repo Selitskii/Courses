@@ -7,7 +7,7 @@ class OperationUseCaseImpl(
         return  operationReposytory.getOperation()
     }
 
-    override fun deleteOperation(position: Int) {
-        operationReposytory.deleteOperation(position)
+    override fun deleteOperation(operation: Operation) {
+        operationReposytory.deleteOperation(operation)
     }
 }

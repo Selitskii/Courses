@@ -8,16 +8,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.clearav.domain.UseCase.Operation
 import com.example.clearav.presentation.adapters.OperationAdapter
 import com.example.clearav.presentation.viewModel.MainViewModel
 import com.example.courses.R
+import com.example.courses.presentation.adapters.ItemClickListener
+import com.example.courses.presentation.viewModel.CalculationState
 
-class MainFragment : Fragment() {
+class MainFragment : Fragment(),ItemClickListener {
 
     companion object {
         fun newInstance() = MainFragment()
@@ -29,6 +33,7 @@ class MainFragment : Fragment() {
     private lateinit var  inputSecond:EditText
     private  lateinit var  btncalculate:Button
     private lateinit var operation:RecyclerView
+    private  lateinit var textState:TextView
     private var adapter =OperationAdapter(mutableListOf())
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -54,6 +59,20 @@ class MainFragment : Fragment() {
             adapter.setData(it)
         })
 
+        viewModel.calculationState.observe(viewLifecycleOwner, Observer {
+            when(it){
+                CalculationState.Free -> btncalculate.isEnabled=true
+                CalculationState.Loading -> btncalculate.isEnabled=false
+                CalculationState.Result -> btncalculate.isEnabled=false
+            }
+
+            textState.text=getString(when(it){
+                CalculationState.Free -> R.string.free
+                CalculationState.Loading -> R.string.loading
+                CalculationState.Result -> R.string.result
+            })
+        })
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -62,7 +81,18 @@ class MainFragment : Fragment() {
         inputSecond=view.findViewById(R.id.edit_Text_Second)
         btncalculate=view.findViewById(R.id.calculate)
         operation=view.findViewById(R.id.operation)
+        textState=view.findViewById(R.id.state_text)
         operation.layoutManager=LinearLayoutManager(requireContext())
         operation.adapter=adapter
+        adapter.setListener(this)
+    }
+
+    override fun onClick(operation: Operation) {
+        viewModel.onOperationSelected(operation)
+    }
+
+    override fun onDestroyView() {
+        adapter.setListener(null)
+        super.onDestroyView()
     }
 }
