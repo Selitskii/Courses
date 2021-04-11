@@ -1,7 +1,7 @@
 package com.example.clearav.domain.UseCase
 
 interface OperationReposytory {
-    fun getOperation():MutableList<Operation>
-    fun addOperation(operation: Operation)
-    fun deleteOperation(operation: Operation)
+    suspend fun  getOperation():MutableList<Operation>
+    suspend fun addOperation(operation: Operation)
+    suspend  fun deleteOperation(operation: Operation)
 }

@@ -10,7 +10,6 @@ class SumCalculate:CalculateRepository {
     override suspend fun calculate(operation: Operation): Int {
         //delay(5000)
         var sum = 0
-        /*
         withContext(Dispatchers.IO)
         {
             for (i in 0..Int.MAX_VALUE) {
@@ -21,7 +20,7 @@ class SumCalculate:CalculateRepository {
                 }
             }
         }
-        */
+
 
         return operation.first+operation.second
     }

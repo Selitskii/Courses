@@ -3,6 +3,6 @@ package com.example.clearav.domain.UseCase
 import java.text.FieldPosition
 
 interface OperationUseCase {
-    fun getOperation():MutableList<Operation>
-    fun deleteOperation(operation: Operation)
+    suspend fun getOperation():MutableList<Operation>
+    suspend fun deleteOperation(operation: Operation)
 }
