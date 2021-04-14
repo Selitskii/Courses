@@ -10,6 +10,7 @@ import com.example.clearav.domain.UseCase.OperationUseCase
 import com.example.courses.Dependencies
 import com.example.courses.presentation.viewModel.CalculationState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
@@ -34,7 +35,6 @@ class MainViewModel : ViewModel() {
 
         viewModelScope.launch {
             rezult = calculateUseCase.calculate(first.toInt(), second.toInt())
-            operations.value = operationUseCase.getOperation()
             _calculationState.value = CalculationState.Result
             setFree()
         }
@@ -43,7 +43,9 @@ class MainViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            operations.value = operationUseCase.getOperation()
+            operationUseCase.getOperation().collect {
+                operations.value=it
+            }
         }
     }
 
@@ -55,7 +57,6 @@ class MainViewModel : ViewModel() {
     fun onOperationSelected(operation: Operation) {
         viewModelScope.launch {
             operationUseCase.deleteOperation(operation)
-            operations.value = operationUseCase.getOperation()
         }
     }
     // TODO: Implement the ViewModel
