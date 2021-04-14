@@ -42,7 +42,9 @@ class MainViewModel : ViewModel() {
     }
 
     init {
-        operations.value=operationUseCase.getOperation()
+        viewModelScope.launch {
+            operations.value = operationUseCase.getOperation()
+        }
     }
 
     suspend fun setFree(){
@@ -51,8 +53,10 @@ class MainViewModel : ViewModel() {
     }
 
     fun onOperationSelected(operation: Operation){
-        operationUseCase.deleteOperation(operation)
-        operations.value = operationUseCase.getOperation()
+        viewModelScope.launch {
+            operationUseCase.deleteOperation(operation)
+            operations.value = operationUseCase.getOperation()
+        }
     }
     // TODO: Implement the ViewModel
 }
