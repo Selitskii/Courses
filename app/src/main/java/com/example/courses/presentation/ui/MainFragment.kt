@@ -21,7 +21,7 @@ import com.example.courses.R
 import com.example.courses.presentation.adapters.ItemClickListener
 import com.example.courses.presentation.viewModel.CalculationState
 
-class MainFragment : Fragment(),ItemClickListener {
+class MainFragment : Fragment(), ItemClickListener {
 
     companion object {
         fun newInstance() = MainFragment()
@@ -29,16 +29,16 @@ class MainFragment : Fragment(),ItemClickListener {
 
     private lateinit var viewModel: MainViewModel
 
-    private lateinit var  inputFirst:EditText
-    private lateinit var  inputSecond:EditText
-    private  lateinit var  btncalculate:Button
-    private lateinit var operation:RecyclerView
-    private  lateinit var textState:TextView
-    private var adapter =OperationAdapter(mutableListOf())
+    private lateinit var inputFirst: EditText
+    private lateinit var inputSecond: EditText
+    private lateinit var btncalculate: Button
+    private lateinit var operation: RecyclerView
+    private lateinit var textState: TextView
+    private var adapter = OperationAdapter(mutableListOf())
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
-        val view= inflater.inflate(R.layout.main_fragment, container, false)
+        val view = inflater.inflate(R.layout.main_fragment, container, false)
         return view
     }
 
@@ -46,13 +46,13 @@ class MainFragment : Fragment(),ItemClickListener {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         inputFirst.doAfterTextChanged {
-            viewModel.first=it.toString()
+            viewModel.first = it.toString()
         }
         inputSecond.doAfterTextChanged {
-            viewModel.second=it.toString()
+            viewModel.second = it.toString()
         }
         btncalculate.setOnClickListener {
-            val toast=Toast.makeText(requireContext(),"${viewModel.calculate()}", Toast.LENGTH_SHORT)
+            val toast = Toast.makeText(requireContext(), "${viewModel.calculate()}", Toast.LENGTH_SHORT)
             toast.show()
         }
         viewModel.getOperations().observe(viewLifecycleOwner, Observer {
@@ -60,13 +60,13 @@ class MainFragment : Fragment(),ItemClickListener {
         })
 
         viewModel.calculationState.observe(viewLifecycleOwner, Observer {
-            when(it){
-                CalculationState.Free -> btncalculate.isEnabled=true
-                CalculationState.Loading -> btncalculate.isEnabled=false
-                CalculationState.Result -> btncalculate.isEnabled=false
+            when (it) {
+                CalculationState.Free -> btncalculate.isEnabled = true
+                CalculationState.Loading -> btncalculate.isEnabled = false
+                CalculationState.Result -> btncalculate.isEnabled = false
             }
 
-            textState.text=getString(when(it){
+            textState.text = getString(when (it) {
                 CalculationState.Free -> R.string.free
                 CalculationState.Loading -> R.string.loading
                 CalculationState.Result -> R.string.result
@@ -77,13 +77,13 @@ class MainFragment : Fragment(),ItemClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        inputFirst=view.findViewById(R.id.edit_Text_First)
-        inputSecond=view.findViewById(R.id.edit_Text_Second)
-        btncalculate=view.findViewById(R.id.calculate)
-        operation=view.findViewById(R.id.operation)
-        textState=view.findViewById(R.id.state_text)
-        operation.layoutManager=LinearLayoutManager(requireContext())
-        operation.adapter=adapter
+        inputFirst = view.findViewById(R.id.edit_Text_First)
+        inputSecond = view.findViewById(R.id.edit_Text_Second)
+        btncalculate = view.findViewById(R.id.calculate)
+        operation = view.findViewById(R.id.operation)
+        textState = view.findViewById(R.id.state_text)
+        operation.layoutManager = LinearLayoutManager(requireContext())
+        operation.adapter = adapter
         adapter.setListener(this)
     }
 

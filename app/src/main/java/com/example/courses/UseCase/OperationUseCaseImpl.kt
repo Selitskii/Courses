@@ -1,10 +1,10 @@
 package com.example.clearav.domain.UseCase
 
 class OperationUseCaseImpl(
-    val operationReposytory: OperationReposytory
-):OperationUseCase {
+        val operationReposytory: OperationReposytory
+) : OperationUseCase {
     override suspend fun getOperation(): MutableList<Operation> {
-        return  operationReposytory.getOperation()
+        return operationReposytory.getOperation()
     }
 
     override suspend fun deleteOperation(operation: Operation) {

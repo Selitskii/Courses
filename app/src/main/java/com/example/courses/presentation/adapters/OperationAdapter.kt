@@ -16,13 +16,13 @@ import com.example.courses.R
 import com.example.courses.presentation.adapters.ItemClickListener
 
 class OperationAdapter internal constructor(
-    private var data: MutableList<Operation>
+        private var data: MutableList<Operation>
 ) : RecyclerView.Adapter<OperationAdapter.ViewHolder>() {
     private var listener: ItemClickListener? = null
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(viewGroup.context)
-            .inflate(R.layout.item, viewGroup, false)
+                .inflate(R.layout.item, viewGroup, false)
 
         return ViewHolder(view)
     }
@@ -30,7 +30,7 @@ class OperationAdapter internal constructor(
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
         val item = data[position]
-        viewHolder.text.text=item.toString()
+        viewHolder.text.text = item.toString()
         viewHolder.itemView.setOnClickListener {
             listener?.onClick(item)
         }
@@ -38,7 +38,7 @@ class OperationAdapter internal constructor(
 
     override fun getItemCount() = data.size
 
-    fun setData(data: MutableList<Operation>){
+    fun setData(data: MutableList<Operation>) {
         this.data = data
         notifyDataSetChanged()
     }
@@ -51,7 +51,7 @@ class OperationAdapter internal constructor(
 
     fun setListener(itemClickListener: ItemClickListener?) {
         listener = itemClickListener
-   }
+    }
 //
 //    fun cellChanged(position: Int, value: Int) {
 //        data[position] = value

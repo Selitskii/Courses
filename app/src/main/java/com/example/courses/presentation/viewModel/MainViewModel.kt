@@ -14,28 +14,28 @@ import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
     private val calculateUseCase: CalculateUseCase by lazy { Dependencies.getCalculateUseCase() }
-        private val operationUseCase: OperationUseCase by lazy { Dependencies.getOperationUseCase()}
+    private val operationUseCase: OperationUseCase by lazy { Dependencies.getOperationUseCase() }
     var first: String = ""
     var second: String = ""
-    private val _calculationState= MutableLiveData<CalculationState>(CalculationState.Free)
+    private val _calculationState = MutableLiveData<CalculationState>(CalculationState.Free)
 
-    val calculationState:LiveData<CalculationState> = _calculationState
+    val calculationState: LiveData<CalculationState> = _calculationState
 
 
-    private var operations= MutableLiveData<MutableList<Operation>>(mutableListOf())
+    private var operations = MutableLiveData<MutableList<Operation>>(mutableListOf())
 
-    fun getOperations():LiveData<MutableList<Operation>>{
+    fun getOperations(): LiveData<MutableList<Operation>> {
         return operations
     }
 
     fun calculate(): Int {
-        var rezult:Int=0
-        _calculationState.value=CalculationState.Loading
+        var rezult: Int = 0
+        _calculationState.value = CalculationState.Loading
 
         viewModelScope.launch {
             rezult = calculateUseCase.calculate(first.toInt(), second.toInt())
             operations.value = operationUseCase.getOperation()
-            _calculationState.value=CalculationState.Result
+            _calculationState.value = CalculationState.Result
             setFree()
         }
         return rezult
@@ -47,12 +47,12 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    suspend fun setFree(){
+    suspend fun setFree() {
         delay(3000)
-        _calculationState.value=CalculationState.Free
+        _calculationState.value = CalculationState.Free
     }
 
-    fun onOperationSelected(operation: Operation){
+    fun onOperationSelected(operation: Operation) {
         viewModelScope.launch {
             operationUseCase.deleteOperation(operation)
             operations.value = operationUseCase.getOperation()

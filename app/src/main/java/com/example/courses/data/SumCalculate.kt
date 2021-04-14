@@ -6,7 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
-class SumCalculate:CalculateRepository {
+class SumCalculate : CalculateRepository {
     override suspend fun calculate(operation: Operation): Int {
         //delay(5000)
         var sum = 0
@@ -22,6 +22,6 @@ class SumCalculate:CalculateRepository {
         }
 
 
-        return operation.first+operation.second
+        return operation.first + operation.second
     }
 }
