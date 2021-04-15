@@ -1,28 +1,23 @@
 package com.example.clearav.presentation.adapters
 
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
-import com.example.clearav.domain.UseCase.Operation
-import com.example.clearav.domain.UseCase.OperationUseCase
-import com.example.clearav.presentation.viewModel.MainViewModel
-import com.example.courses.Dependencies
 import com.example.courses.R
+import com.example.courses.entity.Person
 import com.example.courses.presentation.adapters.ItemClickListener
 
-class OperationAdapter internal constructor(
-        private var data: MutableList<Operation>
-) : RecyclerView.Adapter<OperationAdapter.ViewHolder>() {
+class PersonAdapter internal constructor(
+    private var data: List<Person>
+) : RecyclerView.Adapter<PersonAdapter.ViewHolder>() {
     private var listener: ItemClickListener? = null
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(viewGroup.context)
-                .inflate(R.layout.item, viewGroup, false)
+            .inflate(R.layout.item, viewGroup, false)
 
         return ViewHolder(view)
     }
@@ -38,7 +33,7 @@ class OperationAdapter internal constructor(
 
     override fun getItemCount() = data.size
 
-    fun setData(data: MutableList<Operation>) {
+    fun setData(data: List<Person>) {
         this.data = data
         notifyDataSetChanged()
     }

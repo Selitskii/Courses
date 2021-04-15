@@ -12,7 +12,6 @@
         android:id="@+id/edit_Text_First"
         style="@style/input"
         android:layout_marginTop="68dp"
-        android:inputType="number"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -27,7 +26,7 @@
         app:layout_constraintTop_toBottomOf="@+id/edit_Text_First" />
 
     <Button
-        android:id="@+id/calculate"
+        android:id="@+id/creat"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="84dp"
@@ -39,14 +38,15 @@
     <TextView
         android:id="@+id/state_text"
         android:textSize="18sp"
+        android:text="Hello"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/calculate" />
+        app:layout_constraintTop_toBottomOf="@+id/creat" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/operation"
+        android:id="@+id/persons"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintEnd_toEndOf="parent"

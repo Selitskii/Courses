@@ -1,26 +1,23 @@
 package com.example.courses
 
-import com.example.clearav.data.OperationLocalSource
-import com.example.clearav.data.SumCalculate
-import com.example.clearav.domain.UseCase.*
+import android.content.SharedPreferences
+import com.example.courses.UseCase.*
+import com.example.courses.data.SharedPreferencesLocalSouse
+import com.example.courses.db.LocalDataBaseSource
 
 object Dependencies {
-
-    private val operationsRepository: OperationReposytory by lazy { OperationLocalSource() }
-
-    fun getCalculateRepository(): CalculateRepository {
-        return SumCalculate()
+    private val personRepository: PersonRepository by lazy { LocalDataBaseSource(App.instance) }
+    private val sharedPreferencesRepository: SharedPreferencesRepository by lazy {
+        SharedPreferencesLocalSouse(
+            App.instance
+        )
     }
 
-    fun getOperationReposytory(): OperationReposytory {
-        return operationsRepository
+    fun getPersonUseCase(): PersonUseCase {
+        return PersonUseCaseImpl(personRepository)
     }
 
-    fun getCalculateUseCase(): CalculateUseCase {
-        return CalculateUseCaseImpl(getCalculateRepository(), getOperationReposytory())
-    }
-
-    fun getOperationUseCase(): OperationUseCase {
-        return OperationUseCaseImpl(getOperationReposytory())
+    fun getSharedPreferences(): SharedPreferencesUseCase {
+        return SharedPreferencesUseCaseImpl(sharedPreferencesRepository)
     }
 }
