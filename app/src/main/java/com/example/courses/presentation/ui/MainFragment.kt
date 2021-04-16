@@ -9,17 +9,15 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.clearav.domain.UseCase.Operation
-import com.example.clearav.presentation.adapters.OperationAdapter
+import com.example.clearav.presentation.adapters.PersonAdapter
 import com.example.clearav.presentation.viewModel.MainViewModel
 import com.example.courses.R
+import com.example.courses.entity.Person
 import com.example.courses.presentation.adapters.ItemClickListener
-import com.example.courses.presentation.viewModel.CalculationState
 
 class MainFragment : Fragment(), ItemClickListener {
 
@@ -32,12 +30,14 @@ class MainFragment : Fragment(), ItemClickListener {
     private lateinit var inputFirst: EditText
     private lateinit var inputSecond: EditText
     private lateinit var btncalculate: Button
-    private lateinit var operation: RecyclerView
+    private lateinit var persons: RecyclerView
     private lateinit var textState: TextView
-    private var adapter = OperationAdapter(mutableListOf())
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View {
+    private var adapter = PersonAdapter(mutableListOf())
+    private lateinit var person: Person
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         val view = inflater.inflate(R.layout.main_fragment, container, false)
         return view
     }
@@ -45,6 +45,9 @@ class MainFragment : Fragment(), ItemClickListener {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        person = viewModel.take()
+        inputFirst.setText(person.name, TextView.BufferType.EDITABLE)
+        inputSecond.setText(person.rating.toString(), TextView.BufferType.EDITABLE)
         inputFirst.doAfterTextChanged {
             viewModel.first = it.toString()
         }
@@ -52,47 +55,34 @@ class MainFragment : Fragment(), ItemClickListener {
             viewModel.second = it.toString()
         }
         btncalculate.setOnClickListener {
-            val toast = Toast.makeText(requireContext(), "${viewModel.calculate()}", Toast.LENGTH_SHORT)
-            toast.show()
+            viewModel.create()
+            viewModel.save()
         }
-        viewModel.getOperations().observe(viewLifecycleOwner, Observer {
+        viewModel.getPersons().observe(viewLifecycleOwner, Observer {
             adapter.setData(it)
-        })
-
-        viewModel.calculationState.observe(viewLifecycleOwner, Observer {
-            when (it) {
-                CalculationState.Free -> btncalculate.isEnabled = true
-                CalculationState.Loading -> btncalculate.isEnabled = false
-                CalculationState.Result -> btncalculate.isEnabled = false
-            }
-
-            textState.text = getString(when (it) {
-                CalculationState.Free -> R.string.free
-                CalculationState.Loading -> R.string.loading
-                CalculationState.Result -> R.string.result
-            })
         })
 
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         inputFirst = view.findViewById(R.id.edit_Text_First)
         inputSecond = view.findViewById(R.id.edit_Text_Second)
-        btncalculate = view.findViewById(R.id.calculate)
-        operation = view.findViewById(R.id.operation)
+        btncalculate = view.findViewById(R.id.creat)
+        persons = view.findViewById(R.id.persons)
         textState = view.findViewById(R.id.state_text)
-        operation.layoutManager = LinearLayoutManager(requireContext())
-        operation.adapter = adapter
+        persons.layoutManager = LinearLayoutManager(requireContext())
+        persons.adapter = adapter
         adapter.setListener(this)
+        super.onViewCreated(view, savedInstanceState)
     }
 
-    override fun onClick(operation: Operation) {
-        viewModel.onOperationSelected(operation)
-    }
 
     override fun onDestroyView() {
-        adapter.setListener(null)
         super.onDestroyView()
+        adapter.setListener(null)
+    }
+
+    override fun onClick(person: Person) {
+        viewModel.onPersonSelected(person)
     }
 }

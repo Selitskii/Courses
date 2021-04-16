@@ -1,63 +1,58 @@
 package com.example.clearav.presentation.viewModel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.clearav.domain.UseCase.CalculateUseCase
-import com.example.clearav.domain.UseCase.Operation
-import com.example.clearav.domain.UseCase.OperationUseCase
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.*
+import com.example.courses.App
 import com.example.courses.Dependencies
-import com.example.courses.presentation.viewModel.CalculationState
+import com.example.courses.UseCase.PersonUseCase
+import com.example.courses.UseCase.SharedPreferencesUseCase
+import com.example.courses.UseCase.SharedPreferencesUseCaseImpl
+import com.example.courses.entity.Person
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-class MainViewModel : ViewModel() {
-    private val calculateUseCase: CalculateUseCase by lazy { Dependencies.getCalculateUseCase() }
-    private val operationUseCase: OperationUseCase by lazy { Dependencies.getOperationUseCase() }
+class MainViewModel() : ViewModel() {
+
+    private val personUseCase: PersonUseCase by lazy { Dependencies.getPersonUseCase() }
+    private val sharedPreferencesUseCase: SharedPreferencesUseCase by lazy { Dependencies.getSharedPreferences() }
     var first: String = ""
     var second: String = ""
-    private val _calculationState = MutableLiveData<CalculationState>(CalculationState.Free)
+    private var persons = MutableLiveData<List<Person>>(listOf())
 
-    val calculationState: LiveData<CalculationState> = _calculationState
-
-
-    private var operations = MutableLiveData<MutableList<Operation>>(mutableListOf())
-
-    fun getOperations(): LiveData<MutableList<Operation>> {
-        return operations
+    fun getPersons(): LiveData<List<Person>> {
+        return persons
     }
 
-    fun calculate(): Int {
-        var rezult: Int = 0
-        _calculationState.value = CalculationState.Loading
-
+    fun create() {
         viewModelScope.launch {
-            rezult = calculateUseCase.calculate(first.toInt(), second.toInt())
-            _calculationState.value = CalculationState.Result
-            setFree()
+            personUseCase.addPerson(first, second.toInt())
         }
-        return rezult
+    }
+
+    fun save() {
+        sharedPreferencesUseCase.save(Person(first, second.toInt()))
+    }
+
+    fun take(): Person {
+        return sharedPreferencesUseCase.take()
     }
 
     init {
         viewModelScope.launch {
-            operationUseCase.getOperation().collect {
-                operations.value=it
+            personUseCase.getPersons().collect {
+                persons.value = it
             }
         }
+
     }
 
-    suspend fun setFree() {
-        delay(3000)
-        _calculationState.value = CalculationState.Free
-    }
 
-    fun onOperationSelected(operation: Operation) {
+    fun onPersonSelected(person: Person) {
         viewModelScope.launch {
-            operationUseCase.deleteOperation(operation)
+            personUseCase.removePerson(person)
         }
     }
-    // TODO: Implement the ViewModel
+
 }

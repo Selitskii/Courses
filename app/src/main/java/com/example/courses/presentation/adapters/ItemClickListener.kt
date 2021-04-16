@@ -1,7 +1,8 @@
 package com.example.courses.presentation.adapters
 
-import com.example.clearav.domain.UseCase.Operation
+import com.example.courses.entity.Person
+
 
 interface ItemClickListener {
-    fun onClick(operation: Operation)
+    fun onClick(person: Person)
 }
