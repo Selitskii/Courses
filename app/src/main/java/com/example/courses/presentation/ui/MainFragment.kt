@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -56,7 +55,7 @@ class MainFragment : Fragment(), ItemClickListener {
             viewModel.second = it.toString()
         }
         btncalculate.setOnClickListener {
-            viewModel.creat()
+            viewModel.create()
             viewModel.save()
         }
         viewModel.getPersons().observe(viewLifecycleOwner, Observer {
@@ -79,11 +78,11 @@ class MainFragment : Fragment(), ItemClickListener {
 
 
     override fun onDestroyView() {
-        adapter.setListener(null)
         super.onDestroyView()
+        adapter.setListener(null)
     }
 
     override fun onClick(person: Person) {
-        viewModel.onOperationSelected(person)
+        viewModel.onPersonSelected(person)
     }
 }

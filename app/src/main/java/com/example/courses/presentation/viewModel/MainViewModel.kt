@@ -1,10 +1,9 @@
 package com.example.clearav.presentation.viewModel
 
+import android.app.Application
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
+import com.example.courses.App
 import com.example.courses.Dependencies
 import com.example.courses.UseCase.PersonUseCase
 import com.example.courses.UseCase.SharedPreferencesUseCase
@@ -14,7 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-class MainViewModel : ViewModel() {
+class MainViewModel() : ViewModel() {
 
     private val personUseCase: PersonUseCase by lazy { Dependencies.getPersonUseCase() }
     private val sharedPreferencesUseCase: SharedPreferencesUseCase by lazy { Dependencies.getSharedPreferences() }
@@ -26,13 +25,13 @@ class MainViewModel : ViewModel() {
         return persons
     }
 
-    fun creat() {
+    fun create() {
         viewModelScope.launch {
             personUseCase.addPerson(first, second.toInt())
         }
     }
 
-    fun save() {//name:String,rating:Int){
+    fun save() {
         sharedPreferencesUseCase.save(Person(first, second.toInt()))
     }
 
@@ -50,7 +49,7 @@ class MainViewModel : ViewModel() {
     }
 
 
-    fun onOperationSelected(person: Person) {
+    fun onPersonSelected(person: Person) {
         viewModelScope.launch {
             personUseCase.removePerson(person)
         }
