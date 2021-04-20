@@ -1,6 +1,7 @@
 package com.example.courses.UseCase
 
 import com.example.courses.entity.Person
+import io.reactivex.Observable
 import kotlinx.coroutines.flow.Flow
 
 class PersonUseCaseImpl(
@@ -18,4 +19,7 @@ class PersonUseCaseImpl(
         personRepository.removePerson(person)
     }
 
+    override fun getPersonsRx(): Observable<List<Person>> {
+        return personRepository.getPersonsRx()
+    }
 }

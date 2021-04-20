@@ -2,6 +2,7 @@ package com.example.courses.db
 
 import androidx.room.*
 import com.example.courses.entity.Person
+import io.reactivex.Observable
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -16,5 +17,7 @@ interface PersonDao {
     @Query("Select * From Person")
     fun selectAll(): Flow<List<Person>>
 
+    @Query("Select * From Person")
+    fun selectAllRx(): Observable<List<Person>>
 
 }

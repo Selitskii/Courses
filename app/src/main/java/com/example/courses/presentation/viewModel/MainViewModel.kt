@@ -9,9 +9,19 @@ import com.example.courses.UseCase.PersonUseCase
 import com.example.courses.UseCase.SharedPreferencesUseCase
 import com.example.courses.UseCase.SharedPreferencesUseCaseImpl
 import com.example.courses.entity.Person
+import io.reactivex.Observable
+import io.reactivex.Scheduler
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
+import io.reactivex.schedulers.Schedulers.io
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.observeOn
+import kotlinx.coroutines.flow.subscribe
+import kotlinx.coroutines.flow.subscribeOn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainViewModel() : ViewModel() {
 
@@ -20,14 +30,21 @@ class MainViewModel() : ViewModel() {
     var first: String = ""
     var second: String = ""
     private var persons = MutableLiveData<List<Person>>(listOf())
-
+    private var personsFilter = MutableLiveData<List<Person>>(listOf())
     fun getPersons(): LiveData<List<Person>> {
         return persons
     }
 
+    fun getPersonsFilter(): LiveData<List<Person>> {
+        return personsFilter
+    }
+
     fun create() {
         viewModelScope.launch {
-            personUseCase.addPerson(first, second.toInt())
+            withContext(Dispatchers.IO) {
+                personUseCase.addPerson(first, second.toInt())
+            }
+
         }
     }
 
@@ -36,23 +53,53 @@ class MainViewModel() : ViewModel() {
     }
 
     fun take(): Person {
-        return sharedPreferencesUseCase.take()
+        val person = sharedPreferencesUseCase.take()
+        first = person.name
+        second = person.rating.toString()
+        return person
     }
 
     init {
-        viewModelScope.launch {
-            personUseCase.getPersons().collect {
+
+        val observable = personUseCase.getPersonsRx()
+            .subscribeOn(Schedulers.io())
+            .doOnNext {
+                Log.d("ThreadName", Thread.currentThread().name)
+            }
+            .map { list ->
+                list.sortedBy { it.name }
+            }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
                 persons.value = it
             }
-        }
+        val observableFilter = personUseCase.getPersonsRx()
+            .subscribeOn(Schedulers.io())
+            .map { list ->
+                list.filter { (it.rating > 10 && it.name.contains("Di")) }
+                    .sortedBy { it.rating }
+            }
+            .filter {
+                it.size <= 4
+            }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                personsFilter.value = it
+            }
+
 
     }
 
 
     fun onPersonSelected(person: Person) {
         viewModelScope.launch {
-            personUseCase.removePerson(person)
+            withContext(Dispatchers.IO) {
+                personUseCase.removePerson(person)
+            }
+
         }
     }
 
 }
+
+
