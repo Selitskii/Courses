@@ -1,32 +1,21 @@
 package com.example.clearav.presentation.viewModel
 
-import android.app.Application
 import android.util.Log
 import androidx.lifecycle.*
-import com.example.courses.App
 import com.example.courses.Dependencies
 import com.example.courses.UseCase.PersonUseCase
 import com.example.courses.UseCase.SharedPreferencesUseCase
-import com.example.courses.UseCase.SharedPreferencesUseCaseImpl
 import com.example.courses.entity.Person
-import io.reactivex.Observable
-import io.reactivex.Scheduler
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import io.reactivex.schedulers.Schedulers.io
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.observeOn
-import kotlinx.coroutines.flow.subscribe
-import kotlinx.coroutines.flow.subscribeOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainViewModel() : ViewModel() {
 
     private val personUseCase: PersonUseCase by lazy { Dependencies.getPersonUseCase() }
-    private val sharedPreferencesUseCase: SharedPreferencesUseCase by lazy { Dependencies.getSharedPreferences() }
+    private val personInputUseCase: SharedPreferencesUseCase by lazy { Dependencies.getSharedPreferences() }
     var first: String = ""
     var second: String = ""
     private var persons = MutableLiveData<List<Person>>(listOf())
@@ -49,18 +38,18 @@ class MainViewModel() : ViewModel() {
     }
 
     fun save() {
-        sharedPreferencesUseCase.save(Person(first, second.toInt()))
+        personInputUseCase.save(Person(first, second.toInt()))
     }
 
+
     fun take(): Person {
-        val person = sharedPreferencesUseCase.take()
+        val person = personInputUseCase.take()
         first = person.name
         second = person.rating.toString()
         return person
     }
 
     init {
-
         val observable = personUseCase.getPersonsRx()
             .subscribeOn(Schedulers.io())
             .doOnNext {
@@ -86,8 +75,6 @@ class MainViewModel() : ViewModel() {
             .subscribe {
                 personsFilter.value = it
             }
-
-
     }
 
 
@@ -96,10 +83,6 @@ class MainViewModel() : ViewModel() {
             withContext(Dispatchers.IO) {
                 personUseCase.removePerson(person)
             }
-
         }
     }
-
 }
-
-

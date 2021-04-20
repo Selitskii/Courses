@@ -35,10 +35,10 @@ class MainFragment : Fragment(), ItemClickListener {
     private lateinit var inputSecond: EditText
     private lateinit var btncalculate: Button
     private lateinit var persons: RecyclerView
-    private lateinit var personsFilter: RecyclerView
+    private lateinit var personsFiltered: RecyclerView
     private lateinit var textState: TextView
     private var adapter = PersonAdapter(mutableListOf())
-    private var adapterFilter = PersonAdapter(mutableListOf())
+    private var adapterFiltered = PersonAdapter(mutableListOf())
     private val compositeDisposable = CompositeDisposable()
     private lateinit var person: Person
     override fun onCreateView(
@@ -78,7 +78,7 @@ class MainFragment : Fragment(), ItemClickListener {
             adapter.setData(it)
         })
         viewModel.getPersonsFilter().observe(viewLifecycleOwner, Observer {
-            adapterFilter.setData(it)
+            adapterFiltered.setData(it)
         })
 
     }
@@ -88,14 +88,14 @@ class MainFragment : Fragment(), ItemClickListener {
         inputSecond = view.findViewById(R.id.edit_Text_Second)
         btncalculate = view.findViewById(R.id.creat)
         persons = view.findViewById(R.id.persons)
-        personsFilter = view.findViewById(R.id.personsFilter)
+        personsFiltered = view.findViewById(R.id.personsFiltered)
         textState = view.findViewById(R.id.state_text)
         persons.layoutManager = LinearLayoutManager(requireContext())
         persons.adapter = adapter
-        personsFilter.layoutManager = LinearLayoutManager(requireContext())
-        personsFilter.adapter = adapterFilter
+        personsFiltered.layoutManager = LinearLayoutManager(requireContext())
+        personsFiltered.adapter = adapterFiltered
         adapter.setListener(this)
-        adapterFilter.setListener(this)
+        adapterFiltered.setListener(this)
         super.onViewCreated(view, savedInstanceState)
     }
 
@@ -103,7 +103,7 @@ class MainFragment : Fragment(), ItemClickListener {
     override fun onDestroyView() {
         super.onDestroyView()
         adapter.setListener(null)
-        adapterFilter.setListener(null)
+        adapterFiltered.setListener(null)
         compositeDisposable.dispose()
     }
 
