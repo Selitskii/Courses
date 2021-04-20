@@ -6,23 +6,28 @@ import com.example.courses.R
 import com.example.courses.UseCase.SharedPreferencesRepository
 import com.example.courses.entity.Person
 
-class SharedPreferencesLocalSouse(var context: Context):SharedPreferencesRepository {
-
-    lateinit var sharedPreferences:SharedPreferences
+class SharedPreferencesLocalSouse(var context: Context) : SharedPreferencesRepository {
+    private val sPref="SPref"
+    private val sPrefName="SPref_Name"
+    private val sPrefRating="SPref_Rating"
+    lateinit var sharedPreferences: SharedPreferences
     override fun save(person: Person) {
-        sharedPreferences=context.getSharedPreferences(R.string.SPref.toString(),Context.MODE_PRIVATE)
-        val editor:SharedPreferences.Editor=sharedPreferences.edit()
-        editor.putString(R.string.SPref_Name.toString(),person.name)
-        editor.putInt(R.string.SPref_Rating.toString(),person.rating)
+        sharedPreferences =
+            context.getSharedPreferences(sPref, Context.MODE_PRIVATE)
+        val editor: SharedPreferences.Editor = sharedPreferences.edit()
+        editor.putString(sPrefName, person.name)
+        editor.putInt(sPrefRating, person.rating)
         editor.commit()
         editor.apply()
     }
 
     override fun take(): Person {
-        sharedPreferences=context.getSharedPreferences("SPref",Context.MODE_PRIVATE)
+        sharedPreferences =
+            context.getSharedPreferences(sPref, Context.MODE_PRIVATE)
         return Person(
-            sharedPreferences.getString("SPref_Name","").toString(),
-            sharedPreferences.getInt("SPref_Rating",0))
+            sharedPreferences.getString(sPrefName, "").toString(),
+            sharedPreferences.getInt(sPrefRating, 0)
+        )
 
     }
 }
