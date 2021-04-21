@@ -69,7 +69,7 @@ class MainViewModel() : ViewModel() {
                     .sortedBy { it.rating }
             }
             .filter {
-                it.size <= 4
+                it.size >= 2
             }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
