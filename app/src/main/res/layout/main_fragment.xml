@@ -12,7 +12,7 @@
         android:id="@+id/edit_Text_First"
         style="@style/input"
         android:layout_marginTop="68dp"
-        android:inputType="number"
+        android:inputType="text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -27,31 +27,57 @@
         app:layout_constraintTop_toBottomOf="@+id/edit_Text_First" />
 
     <Button
-        android:id="@+id/calculate"
+        android:id="@+id/addPerson"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="84dp"
-        android:text="Calculate"
+        android:text="@string/addPerson"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edit_Text_Second" />
 
-    <TextView
-        android:id="@+id/state_text"
-        android:textSize="18sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/calculate" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/operation"
+        android:id="@+id/full_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/state_text" />
+        app:layout_constraintEnd_toStartOf="@id/filter_list"
+        app:layout_constraintTop_toBottomOf="@+id/button_filter_name"
+        app:layout_constraintBottom_toTopOf="@id/filter_list"/>
+
+    <Button
+        android:id="@+id/button_filter_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:text="name filter"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/addPerson"
+        app:layout_constraintEnd_toStartOf="@id/button_filter_rating"/>
+
+    <Button
+        android:id="@+id/button_filter_rating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="10dp"
+        android:text="rating filter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/button_filter_name"
+        app:layout_constraintTop_toBottomOf="@+id/addPerson" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/filter_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/full_list"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

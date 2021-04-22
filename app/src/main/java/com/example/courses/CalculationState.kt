@@ -1,4 +1,4 @@
-package com.example.courses.presentation.viewModel
+package com.example.courses
 
 sealed class CalculationState {
 

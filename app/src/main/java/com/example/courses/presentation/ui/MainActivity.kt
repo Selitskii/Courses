@@ -1,8 +1,9 @@
-package com.example.courses
+package com.example.courses.presentation.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.clearav.presentation.ui.MainFragment
+import com.example.courses.R
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -11,8 +12,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main_activity)
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, MainFragment.newInstance())
-                    .commitNow()
+                .replace(R.id.container, MainFragment.newInstance())
+                .commitNow()
         }
     }
+
 }

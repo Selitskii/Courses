@@ -1,4 +1,4 @@
-package com.example.clearav.presentation.ui
+package com.example.courses.presentation.ui
 
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
@@ -8,18 +8,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.clearav.domain.UseCase.Operation
-import com.example.clearav.presentation.adapters.OperationAdapter
-import com.example.clearav.presentation.viewModel.MainViewModel
+import com.example.courses.presentation.adapter.PersonAdapter
+import com.example.courses.presentation.viewmodel.MainViewModel
 import com.example.courses.R
-import com.example.courses.presentation.adapters.ItemClickListener
-import com.example.courses.presentation.viewModel.CalculationState
+import com.example.courses.presentation.adapter.ItemClickListener
+import com.example.courses.domain.entity.Person
+import com.example.courses.presentation.adapter.PersonAdapterFilter
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 
 class MainFragment : Fragment(), ItemClickListener {
 
@@ -29,70 +32,117 @@ class MainFragment : Fragment(), ItemClickListener {
 
     private lateinit var viewModel: MainViewModel
 
-    private lateinit var inputFirst: EditText
-    private lateinit var inputSecond: EditText
-    private lateinit var btncalculate: Button
-    private lateinit var operation: RecyclerView
-    private lateinit var textState: TextView
-    private var adapter = OperationAdapter(mutableListOf())
+    private lateinit var inputLogin: EditText
+    private lateinit var inputPassword: EditText
+    private lateinit var btnAddPerson: Button
+    private lateinit var btnFilterName: Button
+    private lateinit var btnFilterRating: Button
+    private lateinit var fullList: RecyclerView
+    private lateinit var filterList: RecyclerView
+    private var adapter = PersonAdapter(mutableListOf())
+    private var adapterFilter = PersonAdapterFilter(mutableListOf())
+    private val compositeDisposable = CompositeDisposable()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View {
-        val view = inflater.inflate(R.layout.main_fragment, container, false)
-        return view
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        return inflater.inflate(R.layout.main_fragment, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
+
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        inputFirst.doAfterTextChanged {
+
+
+        inputLogin.doAfterTextChanged {
             viewModel.first = it.toString()
         }
-        inputSecond.doAfterTextChanged {
+
+
+        inputPassword.doAfterTextChanged {
             viewModel.second = it.toString()
         }
-        btncalculate.setOnClickListener {
-            val toast = Toast.makeText(requireContext(), "${viewModel.calculate()}", Toast.LENGTH_SHORT)
-            toast.show()
+
+        val observableNameFilter = Observable.create<Unit> { subscriber ->
+            btnFilterName.setOnClickListener {
+                subscriber.onNext(Unit)
+            }
         }
-        viewModel.getOperations().observe(viewLifecycleOwner, Observer {
+
+        val subscribeNameFilter = observableNameFilter
+            .observeOn(Schedulers.io())
+            .subscribeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                viewModel.nameFilter()
+            }
+
+        compositeDisposable.add(subscribeNameFilter)
+
+        val observableRatingFIlter = Observable.create<Unit> { subscriber ->
+            btnFilterRating.setOnClickListener {
+                subscriber.onNext(Unit)
+            }
+        }
+
+        val subscriberRatingFilter = observableRatingFIlter
+            .observeOn(Schedulers.io())
+            .subscribeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                viewModel.ratingFilter()
+            }
+
+        compositeDisposable.add(subscriberRatingFilter)
+
+        val observable = Observable.create<Unit> { subscriber ->
+            btnAddPerson.setOnClickListener {
+                subscriber.onNext(Unit)
+            }
+        }
+
+        val subscribe = observable
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                viewModel.addPersonVM()
+            }
+        compositeDisposable.add(subscribe)
+
+        viewModel.getPersonsVM().observe(viewLifecycleOwner, Observer {
             adapter.setData(it)
         })
 
-        viewModel.calculationState.observe(viewLifecycleOwner, Observer {
-            when (it) {
-                CalculationState.Free -> btncalculate.isEnabled = true
-                CalculationState.Loading -> btncalculate.isEnabled = false
-                CalculationState.Result -> btncalculate.isEnabled = false
-            }
-
-            textState.text = getString(when (it) {
-                CalculationState.Free -> R.string.free
-                CalculationState.Loading -> R.string.loading
-                CalculationState.Result -> R.string.result
-            })
+        viewModel.getPersonsVMFilter().observe(viewLifecycleOwner, {
+            adapterFilter.setData(it)
         })
 
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        inputFirst = view.findViewById(R.id.edit_Text_First)
-        inputSecond = view.findViewById(R.id.edit_Text_Second)
-        btncalculate = view.findViewById(R.id.calculate)
-        operation = view.findViewById(R.id.operation)
-        textState = view.findViewById(R.id.state_text)
-        operation.layoutManager = LinearLayoutManager(requireContext())
-        operation.adapter = adapter
+        inputLogin = view.findViewById(R.id.edit_Text_First)
+        inputPassword = view.findViewById(R.id.edit_Text_Second)
+        btnAddPerson = view.findViewById(R.id.addPerson)
+        btnFilterName = view.findViewById(R.id.button_filter_name)
+        btnFilterRating = view.findViewById(R.id.button_filter_rating)
+        filterList = view.findViewById(R.id.filter_list)
+        fullList = view.findViewById(R.id.full_list)
+        fullList.layoutManager = LinearLayoutManager(requireContext())
+        fullList.adapter = adapter
         adapter.setListener(this)
+        filterList.layoutManager = LinearLayoutManager(requireContext())
+        filterList.adapter = adapterFilter
     }
 
-    override fun onClick(operation: Operation) {
-        viewModel.onOperationSelected(operation)
+    override fun onClick(person: Person) {
+        viewModel.removePerson(person)
     }
 
     override fun onDestroyView() {
-        adapter.setListener(null)
         super.onDestroyView()
+        adapter.setListener(null)
+        viewModel.destroy()
+        compositeDisposable.dispose()
     }
 }
