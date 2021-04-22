@@ -5,14 +5,16 @@ import io.reactivex.Observable
 import kotlinx.coroutines.flow.Flow
 
 class PersonUseCaseImpl(
-    val personRepository: PersonRepository
+    private val personRepository: PersonRepository,
+    private val simplifyPersonRepository: SimplifyPersonRepository
+
 ) : PersonUseCase {
-    override suspend fun getPersons(): Flow<List<Person>> {
-        return personRepository.getPersons()
+    override suspend fun subscribePersons(): Flow<List<Person>> {
+        return personRepository.subscribePersons()
     }
 
     override suspend fun addPerson(name: String, rating: Int) {
-        personRepository.addPerson(name, rating)
+        simplifyPersonRepository.addPerson(name, rating)
     }
 
     override suspend fun removePerson(person: Person) {
@@ -21,5 +23,9 @@ class PersonUseCaseImpl(
 
     override fun getPersonsRx(): Observable<List<Person>> {
         return personRepository.getPersonsRx()
+    }
+
+    override suspend fun getPersons(): List<Person> {
+        return simplifyPersonRepository.getPersons()
     }
 }
