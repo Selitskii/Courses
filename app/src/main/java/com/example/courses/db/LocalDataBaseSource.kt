@@ -18,8 +18,8 @@ class LocalDataBaseSource(context: Context) : PersonRepository {
     )
         .build()
 
-    override suspend fun getPersons(): Flow<List<Person>> {
-        return db.getPersonDao().selectAll()
+    override suspend fun getPersons(): List<Person> {
+        return emptyList()
     }
 
     override suspend fun addPerson(name: String, rating: Int) {
@@ -32,5 +32,9 @@ class LocalDataBaseSource(context: Context) : PersonRepository {
 
     override fun getPersonsRx(): Observable<List<Person>> {
         return db.getPersonDao().selectAllRx().share()
+    }
+
+    override suspend fun subscribePersons(): Flow<List<Person>> {
+        return db.getPersonDao().selectAll()
     }
 }

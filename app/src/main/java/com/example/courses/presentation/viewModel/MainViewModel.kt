@@ -20,6 +20,8 @@ class MainViewModel() : ViewModel() {
     var second: String = ""
     private var persons = MutableLiveData<List<Person>>(listOf())
     private var personsFilter = MutableLiveData<List<Person>>(listOf())
+
+
     fun getPersons(): LiveData<List<Person>> {
         return persons
     }
@@ -50,6 +52,11 @@ class MainViewModel() : ViewModel() {
     }
 
     init {
+        viewModelScope.launch {
+
+            persons.value=personUseCase.getPersons()
+        }
+    /*
         val observable = personUseCase.getPersonsRx()
             .subscribeOn(Schedulers.io())
             .doOnNext {
@@ -75,6 +82,7 @@ class MainViewModel() : ViewModel() {
             .subscribe {
                 personsFilter.value = it
             }
+            */
     }
 
 
