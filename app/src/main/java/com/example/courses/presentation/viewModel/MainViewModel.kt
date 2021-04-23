@@ -1,5 +1,6 @@
 package com.example.clearav.presentation.viewModel
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.lifecycle.*
 import com.example.courses.Dependencies
@@ -12,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@SuppressLint("CheckResult")
 class MainViewModel() : ViewModel() {
 
     private val personUseCase: PersonUseCase by lazy { Dependencies.getPersonUseCase() }
@@ -50,7 +52,12 @@ class MainViewModel() : ViewModel() {
     }
 
     init {
-        val observable = personUseCase.getPersonsRx()
+
+        viewModelScope.launch {
+            persons.value = personUseCase.subscribeToPerson()
+        }
+
+        personUseCase.getPersonsRx()
             .subscribeOn(Schedulers.io())
             .doOnNext {
                 Log.d("ThreadName", Thread.currentThread().name)
@@ -62,7 +69,7 @@ class MainViewModel() : ViewModel() {
             .subscribe {
                 persons.value = it
             }
-        val observableFilter = personUseCase.getPersonsRx()
+        personUseCase.getPersonsRx()
             .subscribeOn(Schedulers.io())
             .map { list ->
                 list.filter { (it.rating > 10 && it.name.contains("Di")) }

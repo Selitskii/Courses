@@ -33,4 +33,9 @@ class LocalDataBaseSource(context: Context) : PersonRepository {
     override fun getPersonsRx(): Observable<List<Person>> {
         return db.getPersonDao().selectAllRx().share()
     }
+
+    override suspend fun getPersonsDatabase(): List<Person>
+    {
+        return emptyList()
+    }
 }
