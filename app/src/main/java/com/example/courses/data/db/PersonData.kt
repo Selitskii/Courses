@@ -2,19 +2,17 @@ package com.example.courses.data.db
 
 import android.content.Context
 import androidx.room.Room
-import com.example.courses.data.repositories.PersonRepository
+import com.example.courses.domain.repositories.PersonRepository
 import com.example.courses.domain.entity.Person
 import io.reactivex.Observable
 import kotlinx.coroutines.flow.Flow
 
-class PersonData(context: Context): PersonRepository {
+class PersonData(context: Context) : PersonRepository {
 
     private var database = Room.databaseBuilder(
-        context,
-        DbDatabase::class.java,
+        context, DbDatabase::class.java,
         "personDatabase"
-    ).allowMainThreadQueries().build()
-
+    ).build()
 
     override suspend fun getPersons(): Flow<List<Person>> {
         return database.getPersonDao().selectAll()
@@ -31,6 +29,5 @@ class PersonData(context: Context): PersonRepository {
     override fun getPersonsRX(): Observable<List<Person>> {
         return database.getPersonDao().selectAllRX().share()
     }
-
 
 }

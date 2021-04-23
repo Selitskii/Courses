@@ -87,7 +87,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun destroy(){
+    fun destroy() {
         compositeDispatcher.dispose()
     }
 

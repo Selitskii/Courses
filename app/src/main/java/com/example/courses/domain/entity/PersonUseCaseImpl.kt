@@ -1,6 +1,6 @@
 package com.example.courses.domain.entity
 
-import com.example.courses.data.repositories.PersonRepository
+import com.example.courses.domain.repositories.PersonRepository
 import com.example.courses.domain.use_case.PersonUseCase
 import io.reactivex.Observable
 import kotlinx.coroutines.flow.Flow
@@ -13,7 +13,7 @@ class PersonUseCaseImpl(
     }
 
     override suspend fun addPerson(name: String, rating: Int) {
-        personRepository.addPerson(name,rating)
+        personRepository.addPerson(name, rating)
     }
 
     override suspend fun removePerson(person: Person) {

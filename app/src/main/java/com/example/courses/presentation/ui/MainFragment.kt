@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,7 +17,6 @@ import com.example.courses.presentation.viewmodel.MainViewModel
 import com.example.courses.R
 import com.example.courses.presentation.adapter.ItemClickListener
 import com.example.courses.domain.entity.Person
-import com.example.courses.presentation.adapter.PersonAdapterFilter
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -39,8 +37,8 @@ class MainFragment : Fragment(), ItemClickListener {
     private lateinit var btnFilterRating: Button
     private lateinit var fullList: RecyclerView
     private lateinit var filterList: RecyclerView
-    private var adapter = PersonAdapter(mutableListOf())
-    private var adapterFilter = PersonAdapterFilter(mutableListOf())
+    private var adapter = PersonAdapter()
+    private var adapterFilter = PersonAdapter()
     private val compositeDisposable = CompositeDisposable()
 
     override fun onCreateView(

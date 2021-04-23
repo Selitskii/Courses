@@ -4,13 +4,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.courses.R
 import com.example.courses.domain.entity.Person
 
-class PersonAdapter (
-    private var data: List<Person>
-) : RecyclerView.Adapter<PersonAdapter.ViewHolder>() {
+class PersonAdapter(
+
+) : ListAdapter<Person, PersonAdapter.ViewHolder>(PersonsCompareCallback()) {
 
     private var listener: ItemClickListener? = null
 
@@ -23,18 +24,15 @@ class PersonAdapter (
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
-        val item = data[position]
-        viewHolder.text.text = item.toString()
+        viewHolder.text.text = getItem(position).toString()
         viewHolder.itemView.setOnClickListener {
-            listener?.onClick(item)
+            listener?.onClick(getItem(position))
         }
+
     }
 
-    override fun getItemCount() = data.size
-
     fun setData(data: List<Person>) {
-        this.data = data
-        notifyDataSetChanged()
+        submitList(data)
     }
 
     fun setListener(itemClickListener: ItemClickListener?) {

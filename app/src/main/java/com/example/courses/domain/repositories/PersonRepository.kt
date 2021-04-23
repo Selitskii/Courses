@@ -1,4 +1,4 @@
-package com.example.courses.data.repositories
+package com.example.courses.domain.repositories
 
 import com.example.courses.domain.entity.Person
 import io.reactivex.Observable
