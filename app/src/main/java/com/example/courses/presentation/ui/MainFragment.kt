@@ -37,8 +37,8 @@ class MainFragment : Fragment(), ItemClickListener {
     private lateinit var persons: RecyclerView
     private lateinit var personsFiltered: RecyclerView
     private lateinit var textState: TextView
-    private var adapter = PersonAdapter(mutableListOf())
-    private var adapterFiltered = PersonAdapter(mutableListOf())
+    private var adapter = PersonAdapter()
+    private var adapterFilter = PersonAdapter()
     private val compositeDisposable = CompositeDisposable()
     private lateinit var person: Person
     override fun onCreateView(
@@ -78,7 +78,7 @@ class MainFragment : Fragment(), ItemClickListener {
             adapter.setData(it)
         })
         viewModel.getPersonsFilter().observe(viewLifecycleOwner, Observer {
-            adapterFiltered.setData(it)
+            adapterFilter.setData(it)
         })
 
     }
@@ -93,9 +93,8 @@ class MainFragment : Fragment(), ItemClickListener {
         persons.layoutManager = LinearLayoutManager(requireContext())
         persons.adapter = adapter
         personsFiltered.layoutManager = LinearLayoutManager(requireContext())
-        personsFiltered.adapter = adapterFiltered
+        personsFiltered.adapter = adapterFilter
         adapter.setListener(this)
-        adapterFiltered.setListener(this)
         super.onViewCreated(view, savedInstanceState)
     }
 
@@ -103,7 +102,6 @@ class MainFragment : Fragment(), ItemClickListener {
     override fun onDestroyView() {
         super.onDestroyView()
         adapter.setListener(null)
-        adapterFiltered.setListener(null)
         compositeDisposable.dispose()
     }
 

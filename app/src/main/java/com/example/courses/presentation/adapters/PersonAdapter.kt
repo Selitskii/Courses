@@ -18,7 +18,6 @@ class PersonAdapter internal constructor(
     private var listener: ItemClickListener? = null
 
 
-
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(viewGroup.context)
             .inflate(R.layout.item, viewGroup, false)
@@ -28,6 +27,12 @@ class PersonAdapter internal constructor(
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
+        val item = getItem(position)
+        viewHolder.text.text = item.toString()
+        viewHolder.itemView.setOnClickListener {
+            listener?.onClick(item)
+        }
+
 /*
         val item = data[position]
 */
@@ -35,9 +40,10 @@ class PersonAdapter internal constructor(
         viewHolder.itemView.setOnClickListener {
             listener?.onClick(item)
         }*/
-    }
 
-    override fun getItemCount() = 0 /*data.size*/
+
+    }
+    /*data.size*/
 
     fun setData(data: List<Person>) {
 
@@ -46,8 +52,7 @@ class PersonAdapter internal constructor(
     }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val text: TextView = view.findViewById<TextView>(R.id.itemText)
-
+        val text: TextView = view.findViewById(R.id.itemText)
     }
 
 
