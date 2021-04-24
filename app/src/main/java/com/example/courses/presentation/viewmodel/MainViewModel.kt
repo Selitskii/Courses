@@ -1,6 +1,5 @@
 package com.example.courses.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,14 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.courses.Dependencies
 import com.example.courses.domain.entity.Person
 import com.example.courses.domain.use_case.PersonUseCase
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainViewModel : ViewModel() {
 
@@ -32,7 +26,7 @@ class MainViewModel : ViewModel() {
     fun nameFilter() {
 
         viewModelScope.launch {
-            personUseCase.getPersons().map { list ->
+            personUseCase.subscribePersons().map { list ->
                 list.sortedBy { it.name }
             }.collect {
                 personsFilter.value = it
@@ -44,7 +38,7 @@ class MainViewModel : ViewModel() {
     fun ratingFilter() {
 
         viewModelScope.launch {
-            personUseCase.getPersons().map { list ->
+            personUseCase.subscribePersons().map { list ->
                 list.sortedBy { it.rating }
             }.collect {
                 personsFilter.value = it
@@ -77,9 +71,7 @@ class MainViewModel : ViewModel() {
     fun getInit() {
 
         viewModelScope.launch {
-            personUseCase.getPersons().collect {
-                persons.value = it
-            }
+            persons.value = personUseCase.getPersons()
 
         }
 

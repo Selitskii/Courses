@@ -16,7 +16,7 @@ class PersonData(context: Context) : PersonRepository {
         "personDatabase"
     ).build()
 
-    override suspend fun getPersons(): Flow<List<Person>> {
+    override suspend fun subscribePersons(): Flow<List<Person>> {
         return database.getPersonDao().selectAll()
     }
 
@@ -34,6 +34,10 @@ class PersonData(context: Context) : PersonRepository {
 
     override fun getPersonsRX(): Observable<List<Person>> {
         return database.getPersonDao().selectAllRX().share()
+    }
+
+    override suspend fun getPersons(): List<Person> {
+        return emptyList()
     }
 
 }

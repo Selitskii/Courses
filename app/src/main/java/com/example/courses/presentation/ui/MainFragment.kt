@@ -83,9 +83,9 @@ class MainFragment : Fragment(), ItemClickListener {
             viewModel.ratingFilter()
         }
 
+
         viewModel.getPersonsVM().observe(viewLifecycleOwner, Observer {
             adapter.setData(it)
-            swipe.isRefreshing = false
         })
 
         viewModel.getPersonsVMFilter().observe(viewLifecycleOwner, {

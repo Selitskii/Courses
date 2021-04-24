@@ -4,11 +4,15 @@ import com.example.courses.domain.entity.Person
 import io.reactivex.Observable
 import kotlinx.coroutines.flow.Flow
 
-interface PersonRepository {
+interface PersonRepository: SimplifyPersonRepository {
 
-    suspend fun getPersons(): Flow<List<Person>>
-    suspend fun addPerson(name: String, rating: Int)
+    suspend fun subscribePersons(): Flow<List<Person>>
     suspend fun removePerson(person: Person)
     fun getPersonsRX(): Observable<List<Person>>
 
+}
+
+interface SimplifyPersonRepository{
+    suspend fun getPersons():List<Person>
+    suspend fun addPerson(name: String, rating: Int)
 }
