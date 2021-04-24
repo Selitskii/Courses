@@ -23,16 +23,7 @@ class MainViewModel : ViewModel() {
     val compositeDispatcher = CompositeDisposable()
 
     init {
-        val subscribe = personUseCase.getPersonsRX().subscribeOn(Schedulers.io()).doOnNext {
-            Log.d("RXJAVA", Thread.currentThread().name)
-        }.observeOn(AndroidSchedulers.mainThread()).doOnComplete {
-
-        }.doOnError {
-
-        }.subscribe {
-            persons.value = it
-        }
-        compositeDispatcher.add(subscribe)
+       getInit()
     }
 
     fun nameFilter() {
@@ -89,6 +80,19 @@ class MainViewModel : ViewModel() {
 
     fun destroy() {
         compositeDispatcher.dispose()
+    }
+
+    fun getInit(){
+        val subscribe = personUseCase.getPersonsRX().subscribeOn(Schedulers.io()).doOnNext {
+            Log.d("RXJAVA", Thread.currentThread().name)
+        }.observeOn(AndroidSchedulers.mainThread()).doOnComplete {
+
+        }.doOnError {
+
+        }.subscribe {
+            persons.value = it
+        }
+        compositeDispatcher.add(subscribe)
     }
 
 }

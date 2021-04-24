@@ -1,7 +1,13 @@
 package com.example.courses.presentation.ui
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.BatteryManager
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
+import android.text.InputFilter
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +18,7 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.courses.presentation.adapter.PersonAdapter
 import com.example.courses.presentation.viewmodel.MainViewModel
 import com.example.courses.R
@@ -32,6 +39,7 @@ class MainFragment : Fragment(), ItemClickListener {
 
     private lateinit var inputLogin: EditText
     private lateinit var inputPassword: EditText
+    private lateinit var swipe:SwipeRefreshLayout
     private lateinit var btnAddPerson: Button
     private lateinit var btnFilterName: Button
     private lateinit var btnFilterRating: Button
@@ -40,6 +48,7 @@ class MainFragment : Fragment(), ItemClickListener {
     private var adapter = PersonAdapter()
     private var adapterFilter = PersonAdapter()
     private val compositeDisposable = CompositeDisposable()
+    private val batery = BatteryBroadcastReceiver()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,7 +67,6 @@ class MainFragment : Fragment(), ItemClickListener {
             viewModel.first = it.toString()
         }
 
-
         inputPassword.doAfterTextChanged {
             viewModel.second = it.toString()
         }
@@ -70,8 +78,8 @@ class MainFragment : Fragment(), ItemClickListener {
         }
 
         val subscribeNameFilter = observableNameFilter
-            .observeOn(Schedulers.io())
-            .subscribeOn(AndroidSchedulers.mainThread())
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 viewModel.nameFilter()
             }
@@ -85,8 +93,8 @@ class MainFragment : Fragment(), ItemClickListener {
         }
 
         val subscriberRatingFilter = observableRatingFIlter
-            .observeOn(Schedulers.io())
-            .subscribeOn(AndroidSchedulers.mainThread())
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 viewModel.ratingFilter()
             }
@@ -115,6 +123,8 @@ class MainFragment : Fragment(), ItemClickListener {
             adapterFilter.setData(it)
         })
 
+
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -126,6 +136,7 @@ class MainFragment : Fragment(), ItemClickListener {
         btnFilterRating = view.findViewById(R.id.button_filter_rating)
         filterList = view.findViewById(R.id.filter_list)
         fullList = view.findViewById(R.id.full_list)
+        swipe = view.findViewById(R.id.swipe)
         fullList.layoutManager = LinearLayoutManager(requireContext())
         fullList.adapter = adapter
         adapter.setListener(this)
@@ -143,4 +154,23 @@ class MainFragment : Fragment(), ItemClickListener {
         viewModel.destroy()
         compositeDisposable.dispose()
     }
+
+    override fun onPause() {
+        super.onPause()
+        requireActivity().unregisterReceiver(batery)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        requireActivity().registerReceiver(batery, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+    }
+
+    inner class BatteryBroadcastReceiver : BroadcastReceiver(){
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val battaryLevel = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL,-1)?:-1
+            inputPassword.setText("$battaryLevel")
+        }
+
+    }
+
 }

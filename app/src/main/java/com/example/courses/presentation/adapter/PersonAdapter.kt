@@ -24,9 +24,11 @@ class PersonAdapter(
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
+        val item = getItem(position)
         viewHolder.text.text = getItem(position).toString()
         viewHolder.itemView.setOnClickListener {
-            listener?.onClick(getItem(position))
+            listener?.onClick(item)
+
         }
 
     }

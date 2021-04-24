@@ -5,7 +5,9 @@ import androidx.room.Room
 import com.example.courses.domain.repositories.PersonRepository
 import com.example.courses.domain.entity.Person
 import io.reactivex.Observable
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 class PersonData(context: Context) : PersonRepository {
 
@@ -19,11 +21,15 @@ class PersonData(context: Context) : PersonRepository {
     }
 
     override suspend fun addPerson(name: String, rating: Int) {
-        database.getPersonDao().insert(Person(name, rating))
+        withContext(Dispatchers.IO){
+            database.getPersonDao().insert(Person(name, rating))
+        }
     }
 
     override suspend fun removePerson(person: Person) {
-        database.getPersonDao().delete(person)
+        withContext(Dispatchers.IO){
+            database.getPersonDao().delete(person)
+        }
     }
 
     override fun getPersonsRX(): Observable<List<Person>> {
