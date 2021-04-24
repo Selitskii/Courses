@@ -39,7 +39,7 @@ class MainFragment : Fragment(), ItemClickListener {
 
     private lateinit var inputLogin: EditText
     private lateinit var inputPassword: EditText
-    private lateinit var swipe:SwipeRefreshLayout
+    private lateinit var swipe: SwipeRefreshLayout
     private lateinit var btnAddPerson: Button
     private lateinit var btnFilterName: Button
     private lateinit var btnFilterRating: Button
@@ -47,7 +47,6 @@ class MainFragment : Fragment(), ItemClickListener {
     private lateinit var filterList: RecyclerView
     private var adapter = PersonAdapter()
     private var adapterFilter = PersonAdapter()
-    private val compositeDisposable = CompositeDisposable()
     private val batery = BatteryBroadcastReceiver()
 
     override fun onCreateView(
@@ -71,59 +70,27 @@ class MainFragment : Fragment(), ItemClickListener {
             viewModel.second = it.toString()
         }
 
-        val observableNameFilter = Observable.create<Unit> { subscriber ->
-            btnFilterName.setOnClickListener {
-                subscriber.onNext(Unit)
-            }
+        btnAddPerson.setOnClickListener {
+            viewModel.addPersonVM()
+            swipe.isRefreshing = false
         }
 
-        val subscribeNameFilter = observableNameFilter
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                viewModel.nameFilter()
-            }
-
-        compositeDisposable.add(subscribeNameFilter)
-
-        val observableRatingFIlter = Observable.create<Unit> { subscriber ->
-            btnFilterRating.setOnClickListener {
-                subscriber.onNext(Unit)
-            }
+        btnFilterName.setOnClickListener {
+            viewModel.nameFilter()
         }
 
-        val subscriberRatingFilter = observableRatingFIlter
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                viewModel.ratingFilter()
-            }
-
-        compositeDisposable.add(subscriberRatingFilter)
-
-        val observable = Observable.create<Unit> { subscriber ->
-            btnAddPerson.setOnClickListener {
-                subscriber.onNext(Unit)
-            }
+        btnFilterRating.setOnClickListener {
+            viewModel.ratingFilter()
         }
-
-        val subscribe = observable
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                viewModel.addPersonVM()
-            }
-        compositeDisposable.add(subscribe)
 
         viewModel.getPersonsVM().observe(viewLifecycleOwner, Observer {
             adapter.setData(it)
+            swipe.isRefreshing = false
         })
 
         viewModel.getPersonsVMFilter().observe(viewLifecycleOwner, {
             adapterFilter.setData(it)
         })
-
-
 
     }
 
@@ -151,8 +118,6 @@ class MainFragment : Fragment(), ItemClickListener {
     override fun onDestroyView() {
         super.onDestroyView()
         adapter.setListener(null)
-        viewModel.destroy()
-        compositeDisposable.dispose()
     }
 
     override fun onPause() {
@@ -165,9 +130,9 @@ class MainFragment : Fragment(), ItemClickListener {
         requireActivity().registerReceiver(batery, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
     }
 
-    inner class BatteryBroadcastReceiver : BroadcastReceiver(){
+    inner class BatteryBroadcastReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            val battaryLevel = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL,-1)?:-1
+            val battaryLevel = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
             inputPassword.setText("$battaryLevel")
         }
 

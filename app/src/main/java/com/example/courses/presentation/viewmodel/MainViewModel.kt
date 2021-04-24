@@ -11,7 +11,11 @@ import com.example.courses.domain.use_case.PersonUseCase
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainViewModel : ViewModel() {
 
@@ -20,40 +24,32 @@ class MainViewModel : ViewModel() {
     var second: String = ""
     private var persons = MutableLiveData<List<Person>>(listOf())
     private var personsFilter = MutableLiveData<List<Person>>(listOf())
-    val compositeDispatcher = CompositeDisposable()
 
     init {
-       getInit()
+        getInit()
     }
 
     fun nameFilter() {
 
-        val subscribeFilterName = personUseCase.getPersonsRX()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .map { list ->
+        viewModelScope.launch {
+            personUseCase.getPersons().map { list ->
                 list.sortedBy { it.name }
-            }
-            .subscribe {
+            }.collect {
                 personsFilter.value = it
             }
-        compositeDispatcher.add(subscribeFilterName)
+        }
 
     }
 
     fun ratingFilter() {
 
-        val subscribeFilterRating = personUseCase.getPersonsRX()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .map { list ->
+        viewModelScope.launch {
+            personUseCase.getPersons().map { list ->
                 list.sortedBy { it.rating }
-            }
-            .subscribe {
+            }.collect {
                 personsFilter.value = it
             }
-        compositeDispatcher.add(subscribeFilterRating)
-
+        }
     }
 
     fun getPersonsVM(): LiveData<List<Person>> {
@@ -78,21 +74,15 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun destroy() {
-        compositeDispatcher.dispose()
-    }
+    fun getInit() {
 
-    fun getInit(){
-        val subscribe = personUseCase.getPersonsRX().subscribeOn(Schedulers.io()).doOnNext {
-            Log.d("RXJAVA", Thread.currentThread().name)
-        }.observeOn(AndroidSchedulers.mainThread()).doOnComplete {
+        viewModelScope.launch {
+            personUseCase.getPersons().collect {
+                persons.value = it
+            }
 
-        }.doOnError {
-
-        }.subscribe {
-            persons.value = it
         }
-        compositeDispatcher.add(subscribe)
+
     }
 
 }
