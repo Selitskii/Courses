@@ -5,45 +5,38 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.courses.Dependencies
+import com.example.courses.data.server.RequestResult
 import com.example.courses.domain.entity.Person
-import com.example.courses.domain.use_case.PersonUseCase
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
+import com.example.courses.domain.use_case.PersonDbUseCase
+import com.example.courses.domain.use_case.PersonsCloudUseCase
 import kotlinx.coroutines.launch
 
-class MainViewModel : ViewModel() {
+class MainViewModel(val personDbUseCase: PersonDbUseCase
+    ) : ViewModel() {
 
+/*
     private val personUseCase: PersonUseCase by lazy { Dependencies.getPersonUseCase() }
-    var first: String = ""
-    var second: String = ""
-    private var persons = MutableLiveData<List<Person>>(listOf())
+*/
+
+    private val personCloudUseCase: PersonsCloudUseCase by lazy { Dependencies.getPersonCloudUseCase() }
+
+
+    var name: String = ""
+    var rating: String = ""
+
+    var persons = MutableLiveData<List<Person>>(listOf())
+    private val topPersons = MutableLiveData<List<Person>>(listOf())
     private var personsFilter = MutableLiveData<List<Person>>(listOf())
+    private val error = MutableLiveData<String>()
+    private val personDataReady = MutableLiveData<Pair<String,Int>>()
 
     init {
-        getInit()
+        updatePerosn()
     }
 
-    fun nameFilter() {
 
-        viewModelScope.launch {
-            personUseCase.subscribePersons().map { list ->
-                list.sortedBy { it.name }
-            }.collect {
-                personsFilter.value = it
-            }
-        }
-
-    }
-
-    fun ratingFilter() {
-
-        viewModelScope.launch {
-            personUseCase.subscribePersons().map { list ->
-                list.sortedBy { it.rating }
-            }.collect {
-                personsFilter.value = it
-            }
-        }
+    fun getTopPersons(): LiveData<List<Person>> {
+        return topPersons
     }
 
     fun getPersonsVM(): LiveData<List<Person>> {
@@ -54,27 +47,74 @@ class MainViewModel : ViewModel() {
         return personsFilter
     }
 
-    fun addPersonVM() {
-        viewModelScope.launch {
-            if (first != "" && second != "") {
-                personUseCase.addPerson(first, second.toInt())
+    fun getError():LiveData<String> = error
+
+    fun getPersonDataReady():LiveData<Pair<String,Int>> = personDataReady
+
+    fun nameFilter() {
+
+        /*viewModelScope.launch {
+            personUseCase.observePersons().map { list ->
+                list.sortedBy { it.name }
+            }.collect {
+                personsFilter.value = it
             }
-        }
+        }*/
+
+        personsFilter.value = persons.value!!.sortedBy { it.name }
+
+    }
+
+    fun ratingFilter() {
+
+        /*viewModelScope.launch {
+            personUseCase.observePersons().map { list ->
+                list.sortedBy { it.rating }
+            }.collect {
+                personsFilter.value = it
+            }
+        }*/
+
+        personsFilter.value = persons.value!!.sortedBy { it.rating }
+    }
+
+    fun addPersonVM() {
+       val rating = try {
+           this.rating.toInt()
+       }catch (exception:Exception){
+           0
+       }
+        personDataReady.value = name to rating
     }
 
     fun removePerson(person: Person) {
         viewModelScope.launch {
-            personUseCase.removePerson(person)
+            personDbUseCase.deletePersonDB(person)
         }
     }
 
-    fun getInit() {
+    private fun <T> processNetworkResult(
+        requestResult:RequestResult<T>,
+        action:(T) -> Unit
+    ){
+        when(requestResult){
+            is RequestResult.Error ->{
+                error.value = requestResult.exception.message
+            }
+            is RequestResult.Success -> {
+                action(requestResult.data)
+            }
+        }
+    }
 
+    fun updatePerosn(){
         viewModelScope.launch {
-            persons.value = personUseCase.getPersons()
-
+            processNetworkResult(personCloudUseCase.getPersonsCL()) {
+                persons.value = it
+            }
         }
-
     }
+
+
 
 }

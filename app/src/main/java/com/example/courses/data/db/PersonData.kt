@@ -11,33 +11,32 @@ import kotlinx.coroutines.withContext
 
 class PersonData(context: Context) : PersonRepository {
 
-    private var database = Room.databaseBuilder(
+    private var db = Room.databaseBuilder(
         context, DbDatabase::class.java,
         "personDatabase"
     ).build()
 
-    override suspend fun subscribePersons(): Flow<List<Person>> {
-        return database.getPersonDao().selectAll()
-    }
+    private val personDao = db.getPersonDao()
 
-    override suspend fun addPerson(name: String, rating: Int) {
+    override suspend fun addPersonDB(person: Person) {
         withContext(Dispatchers.IO){
-            database.getPersonDao().insert(Person(name, rating))
+            personDao.insert(person)
         }
     }
 
-    override suspend fun removePerson(person: Person) {
+    override suspend fun removePersonDB(person: Person) {
         withContext(Dispatchers.IO){
-            database.getPersonDao().delete(person)
+            personDao.delete(person)
         }
     }
 
-    override fun getPersonsRX(): Observable<List<Person>> {
-        return database.getPersonDao().selectAllRX().share()
+    override suspend fun getPersonsDB(): Flow<List<Person>> {
+        return personDao.selectAll()
     }
 
-    override suspend fun getPersons(): List<Person> {
-        return emptyList()
+    override fun getPersonsRXDB(): Observable<List<Person>> {
+        return personDao.selectAllRX()
     }
+
 
 }

@@ -1,5 +1,6 @@
 package com.example.courses.presentation.ui
 
+import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -7,27 +8,28 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import android.text.InputFilter
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.courses.AddPersonService
+import com.example.courses.Dependencies
 import com.example.courses.presentation.adapter.PersonAdapter
 import com.example.courses.presentation.viewmodel.MainViewModel
 import com.example.courses.R
 import com.example.courses.presentation.adapter.ItemClickListener
 import com.example.courses.domain.entity.Person
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 
 class MainFragment : Fragment(), ItemClickListener {
 
@@ -36,9 +38,8 @@ class MainFragment : Fragment(), ItemClickListener {
     }
 
     private lateinit var viewModel: MainViewModel
-
-    private lateinit var inputLogin: EditText
-    private lateinit var inputPassword: EditText
+    private lateinit var name: EditText
+    private lateinit var rating: EditText
     private lateinit var swipe: SwipeRefreshLayout
     private lateinit var btnAddPerson: Button
     private lateinit var btnFilterName: Button
@@ -57,22 +58,22 @@ class MainFragment : Fragment(), ItemClickListener {
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
-
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
+        val factory = Factory(Dependencies.getPersonUseCase(requireContext()))
 
-        inputLogin.doAfterTextChanged {
-            viewModel.first = it.toString()
+        viewModel = ViewModelProvider(this,factory).get(MainViewModel::class.java)
+
+        name.doAfterTextChanged {
+            viewModel.name = it.toString()
         }
 
-        inputPassword.doAfterTextChanged {
-            viewModel.second = it.toString()
+        rating.doAfterTextChanged {
+            viewModel.rating = it.toString()
         }
 
         btnAddPerson.setOnClickListener {
             viewModel.addPersonVM()
-            swipe.isRefreshing = false
         }
 
         btnFilterName.setOnClickListener {
@@ -92,12 +93,31 @@ class MainFragment : Fragment(), ItemClickListener {
             adapterFilter.setData(it)
         })
 
+        swipe.setOnRefreshListener {
+            viewModel.updatePerosn()
+            adapter.setData(viewModel.getPersonsVM().value!!)
+            swipe.isRefreshing = false
+        }
+
+        viewModel.getError().observe(viewLifecycleOwner,{
+            Toast.makeText(requireContext(),viewModel.getError().toString(),Toast.LENGTH_SHORT).show()
+        })
+
+        viewModel.getPersonDataReady().observe(viewLifecycleOwner,{
+            val addPersonServiceIntent =
+                Intent(requireContext(),AddPersonService::class.java).apply {
+                    this.putExtra(AddPersonService.NAME,it.first)
+                    this.putExtra(AddPersonService.RATING,it.second)
+                }
+            requireActivity().startService(addPersonServiceIntent)
+        })
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        inputLogin = view.findViewById(R.id.edit_Text_First)
-        inputPassword = view.findViewById(R.id.edit_Text_Second)
+        name = view.findViewById(R.id.edit_Text_First)
+        rating = view.findViewById(R.id.edit_Text_Second)
         btnAddPerson = view.findViewById(R.id.addPerson)
         btnFilterName = view.findViewById(R.id.button_filter_name)
         btnFilterRating = view.findViewById(R.id.button_filter_rating)
@@ -133,7 +153,7 @@ class MainFragment : Fragment(), ItemClickListener {
     inner class BatteryBroadcastReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val battaryLevel = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
-            inputPassword.setText("$battaryLevel")
+            rating.setText("$battaryLevel")
         }
 
     }

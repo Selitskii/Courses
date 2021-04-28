@@ -4,6 +4,7 @@ import com.example.courses.domain.entity.Person
 import io.reactivex.Observable
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 
@@ -17,5 +18,8 @@ interface APIService {
 
     @POST("addPerson")
     suspend fun addPerson(@Body person: Person): Response<Person>
+
+    @DELETE("deletePerson")
+    suspend fun deletePerson(@Body person:Person):Response<Person>
 
 }
