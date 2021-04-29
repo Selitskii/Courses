@@ -1,27 +1,32 @@
-package com.example.clearav.presentation.ui
+package com.example.courses.presentation.ui
 
+import android.content.*
+import android.os.BatteryManager
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
+import android.os.IBinder
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
+import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.clearav.presentation.adapters.PersonAdapter
-import com.example.clearav.presentation.viewModel.MainViewModel
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.courses.AddPersonService
+import com.example.courses.Const
+import com.example.courses.Dependencies
+import com.example.courses.presentation.adapter.PersonAdapter
+import com.example.courses.presentation.viewmodel.MainViewModel
 import com.example.courses.R
-import com.example.courses.entity.Person
-import com.example.courses.presentation.adapters.ItemClickListener
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
+import com.example.courses.presentation.adapter.ItemClickListener
+import com.example.courses.domain.entity.Person
+import kotlin.reflect.KProperty
+
 
 class MainFragment : Fragment(), ItemClickListener {
 
@@ -30,84 +35,173 @@ class MainFragment : Fragment(), ItemClickListener {
     }
 
     private lateinit var viewModel: MainViewModel
+    private lateinit var name: EditText
+    private lateinit var rating: EditText
+    private lateinit var swipe: SwipeRefreshLayout
+    private lateinit var btnAddPerson: Button
+    private lateinit var btnFilterName: Button
+    private lateinit var btnFilterRating: Button
+    private lateinit var fullList: RecyclerView
+    private lateinit var filterList: RecyclerView
+    private var adapter = PersonAdapter()
+    private var adapterFilter = PersonAdapter()
+    private val batery = BatteryBroadcastReceiver()
+    private val addedPersonBroadcast = PersonAddBroadcastReviever()
+    private var personService:AddPersonService?=null
+    private var boundToPersonService = false
+    private var currentPersonFlag = false
 
-    private lateinit var inputFirst: EditText
-    private lateinit var inputSecond: EditText
-    private lateinit var btncalculate: Button
-    private lateinit var persons: RecyclerView
-    private lateinit var personsFiltered: RecyclerView
-    private lateinit var textState: TextView
-    private var adapter = PersonAdapter(mutableListOf())
-    private var adapterFiltered = PersonAdapter(mutableListOf())
-    private val compositeDisposable = CompositeDisposable()
-    private lateinit var person: Person
+    private val serviceConnection = object : ServiceConnection{
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            boundToPersonService = true
+            personService = (service as AddPersonService.PersonServiceBinder).getService()
+            if(currentPersonFlag){
+                personService?.startAddPersonProcess(viewModel.name,viewModel.rating.toInt())
+                currentPersonFlag = false
+            }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            boundToPersonService = false
+            personService = null
+        }
+
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val view = inflater.inflate(R.layout.main_fragment, container, false)
-        return view
+        return inflater.inflate(R.layout.main_fragment, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        person = viewModel.take()
-        inputFirst.setText(person.name, TextView.BufferType.EDITABLE)
-        inputSecond.setText(person.rating.toString(), TextView.BufferType.EDITABLE)
-        inputFirst.doAfterTextChanged {
-            viewModel.first = it.toString()
+
+        val factory = Factory(Dependencies.getPersonUseCase(requireContext()))
+
+        viewModel = ViewModelProvider(this,factory).get(MainViewModel::class.java)
+
+        name.doAfterTextChanged {
+            viewModel.name = it.toString()
         }
-        inputSecond.doAfterTextChanged {
-            viewModel.second = it.toString()
+
+        rating.doAfterTextChanged {
+            viewModel.rating = it.toString()
         }
-        val observable = Observable.create<Unit> { emitor ->
-            btncalculate.setOnClickListener {
-                emitor.onNext(Unit)
-            }
+
+        btnAddPerson.setOnClickListener {
+/*
+            viewModel.addPersonVM()
+*/
+            handleAtPersonClick()
         }
-        val subscribe = observable
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                viewModel.save()
-                viewModel.create()
-            }
-        compositeDisposable.add(subscribe)
-        viewModel.getPersons().observe(viewLifecycleOwner, Observer {
+
+        btnFilterName.setOnClickListener {
+            viewModel.nameFilter()
+
+        }
+
+        btnFilterRating.setOnClickListener {
+            viewModel.ratingFilter()
+        }
+
+
+        viewModel.getPersonsVM().observe(viewLifecycleOwner, Observer {
             adapter.setData(it)
         })
-        viewModel.getPersonsFilter().observe(viewLifecycleOwner, Observer {
-            adapterFiltered.setData(it)
+
+        viewModel.getPersonsVMFilter().observe(viewLifecycleOwner, {
+            adapterFilter.setData(it)
         })
+
+        swipe.setOnRefreshListener {
+            viewModel.updatePerosn()
+            adapter.setData(viewModel.getPersonsVM().value!!)
+            swipe.isRefreshing = false
+        }
+
+        viewModel.getError().observe(viewLifecycleOwner,{
+            Toast.makeText(requireContext(),viewModel.getError().toString(),Toast.LENGTH_SHORT).show()
+        })
+
+       /* viewModel.getPersonDataReady().observe(viewLifecycleOwner,{
+            val addPersonServiceIntent =
+                Intent(requireContext(),AddPersonService::class.java).apply {
+                    this.putExtra(AddPersonService.NAME,it.first)
+                    this.putExtra(AddPersonService.RATING,it.second)
+                }
+            requireActivity().bindService(addPersonServiceIntent,serviceConnection,Context.BIND_AUTO_CREATE)
+        })*/
 
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        inputFirst = view.findViewById(R.id.edit_Text_First)
-        inputSecond = view.findViewById(R.id.edit_Text_Second)
-        btncalculate = view.findViewById(R.id.creat)
-        persons = view.findViewById(R.id.persons)
-        personsFiltered = view.findViewById(R.id.personsFiltered)
-        textState = view.findViewById(R.id.state_text)
-        persons.layoutManager = LinearLayoutManager(requireContext())
-        persons.adapter = adapter
-        personsFiltered.layoutManager = LinearLayoutManager(requireContext())
-        personsFiltered.adapter = adapterFiltered
-        adapter.setListener(this)
-        adapterFiltered.setListener(this)
         super.onViewCreated(view, savedInstanceState)
-    }
-
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        adapter.setListener(null)
-        adapterFiltered.setListener(null)
-        compositeDisposable.dispose()
+        name = view.findViewById(R.id.edit_Text_First)
+        rating = view.findViewById(R.id.edit_Text_Second)
+        btnAddPerson = view.findViewById(R.id.addPerson)
+        btnFilterName = view.findViewById(R.id.button_filter_name)
+        btnFilterRating = view.findViewById(R.id.button_filter_rating)
+        filterList = view.findViewById(R.id.filter_list)
+        fullList = view.findViewById(R.id.full_list)
+        swipe = view.findViewById(R.id.swipe)
+        fullList.layoutManager = LinearLayoutManager(requireContext())
+        fullList.adapter = adapter
+        adapter.setListener(this)
+        filterList.layoutManager = LinearLayoutManager(requireContext())
+        filterList.adapter = adapterFilter
     }
 
     override fun onClick(person: Person) {
-        viewModel.onPersonSelected(person)
+        viewModel.removePerson(person)
     }
+
+    override fun onDestroyView() {
+        adapter.setListener(null)
+        requireActivity().unbindService(serviceConnection)
+        super.onDestroyView()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        requireActivity().registerReceiver(batery, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        requireActivity().registerReceiver(addedPersonBroadcast, IntentFilter(Const.ADD_PERSON_ACTION))
+
+    }
+
+    override fun onStop() {
+        super.onStop()
+        requireActivity().unregisterReceiver(batery)
+        requireActivity().unregisterReceiver(addedPersonBroadcast)
+    }
+
+    private fun handleAtPersonClick(){
+        if (boundToPersonService) {
+            personService?.startAddPersonProcess(viewModel.name,viewModel.rating.toInt())
+        } else {
+            val addPersonServiceIntent =
+                Intent(requireContext(),AddPersonService::class.java).apply {
+                    this.putExtra(Const.NAME,viewModel.name)
+                    this.putExtra(Const.RATING,viewModel.rating.toInt())
+                    currentPersonFlag = true
+                }
+            requireActivity().bindService(addPersonServiceIntent,serviceConnection,Context.BIND_AUTO_CREATE)
+        }
+    }
+
+    inner class BatteryBroadcastReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val battaryLevel = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+            rating.setText("$battaryLevel")
+        }
+    }
+
+    inner class PersonAddBroadcastReviever: BroadcastReceiver(){
+        override fun onReceive(context: Context?, intent: Intent?) {
+            viewModel.updatePerosn()
+        }
+
+    }
+
 }

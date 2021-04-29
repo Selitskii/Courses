@@ -1,88 +1,111 @@
-package com.example.clearav.presentation.viewModel
+package com.example.courses.presentation.viewmodel
 
-import android.util.Log
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.courses.Dependencies
-import com.example.courses.UseCase.PersonUseCase
-import com.example.courses.UseCase.SharedPreferencesUseCase
-import com.example.courses.entity.Person
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.Dispatchers
+import com.example.courses.data.server.RequestResult
+import com.example.courses.domain.entity.Person
+import com.example.courses.domain.use_case.PersonDbUseCase
+import com.example.courses.domain.use_case.PersonsCloudUseCase
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
-class MainViewModel() : ViewModel() {
+class MainViewModel(val personDbUseCase: PersonDbUseCase
+    ) : ViewModel() {
 
-    private val personUseCase: PersonUseCase by lazy { Dependencies.getPersonUseCase() }
-    private val personInputUseCase: SharedPreferencesUseCase by lazy { Dependencies.getSharedPreferences() }
-    var first: String = ""
-    var second: String = ""
-    private var persons = MutableLiveData<List<Person>>(listOf())
+    private val personCloudUseCase: PersonsCloudUseCase by lazy { Dependencies.getPersonCloudUseCase() }
+
+
+    var name: String = ""
+    var rating: String = ""
+
+    var persons = MutableLiveData<List<Person>>(listOf())
+    private val topPersons = MutableLiveData<List<Person>>(listOf())
     private var personsFilter = MutableLiveData<List<Person>>(listOf())
-    fun getPersons(): LiveData<List<Person>> {
+    private val error = MutableLiveData<String>()
+    private val personDataReady = MutableLiveData<Pair<String,Int>>()
+
+    init {
+        updatePerosn()
+    }
+
+    fun getPersonsVM(): LiveData<List<Person>> {
         return persons
     }
 
-    fun getPersonsFilter(): LiveData<List<Person>> {
+    fun getPersonsVMFilter(): LiveData<List<Person>> {
         return personsFilter
     }
 
-    fun create() {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                personUseCase.addPerson(first, second.toInt())
-            }
+    fun getError():LiveData<String> = error
 
-        }
-    }
+    fun getPersonDataReady():LiveData<Pair<String,Int>> = personDataReady
 
-    fun save() {
-        personInputUseCase.save(Person(first, second.toInt()))
-    }
+    fun nameFilter() {
 
-
-    fun take(): Person {
-        val person = personInputUseCase.take()
-        first = person.name
-        second = person.rating.toString()
-        return person
-    }
-
-    init {
-        val observable = personUseCase.getPersonsRx()
-            .subscribeOn(Schedulers.io())
-            .doOnNext {
-                Log.d("ThreadName", Thread.currentThread().name)
-            }
-            .map { list ->
+        /*viewModelScope.launch {
+            personUseCase.observePersons().map { list ->
                 list.sortedBy { it.name }
-            }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                persons.value = it
-            }
-        val observableFilter = personUseCase.getPersonsRx()
-            .subscribeOn(Schedulers.io())
-            .map { list ->
-                list.filter { (it.rating > 10 && it.name.contains("Di")) }
-                    .sortedBy { it.rating }
-            }
-            .filter {
-                it.size >= 2
-            }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
+            }.collect {
                 personsFilter.value = it
             }
+        }*/
+
+        personsFilter.value = persons.value!!.sortedBy { it.name }
+
     }
 
+    fun ratingFilter() {
 
-    fun onPersonSelected(person: Person) {
+        /*viewModelScope.launch {
+            personUseCase.observePersons().map { list ->
+                list.sortedBy { it.rating }
+            }.collect {
+                personsFilter.value = it
+            }
+        }*/
+
+        personsFilter.value = persons.value!!.sortedBy { it.rating }
+    }
+
+    fun addPersonVM() {
+       val rating = try {
+           this.rating.toInt()
+       }catch (exception:Exception){
+           0
+       }
+        personDataReady.value = name to rating
+    }
+
+    fun removePerson(person: Person) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                personUseCase.removePerson(person)
+            personDbUseCase.deletePersonDB(person)
+        }
+    }
+
+    private fun <T> processNetworkResult(
+        requestResult:RequestResult<T>,
+        action:(T) -> Unit
+    ){
+        when(requestResult){
+            is RequestResult.Error ->{
+                error.value = requestResult.exception.message
+            }
+            is RequestResult.Success -> {
+                action(requestResult.data)
             }
         }
     }
+
+    fun updatePerosn(){
+        viewModelScope.launch {
+            processNetworkResult(personCloudUseCase.getPersonsCL()) {
+                persons.value = it
+            }
+        }
+    }
+
+
+
 }

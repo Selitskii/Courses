@@ -3,6 +3,7 @@
     <string name="free">Free</string>
     <string name="loading">Loading</string>
     <string name="result">Result</string>
+    <string name="addPerson">Add Person</string>
     <string name="SPref">SPref</string>
     <string name="SPref_Name">SPref_Name</string>
     <string name="SPref_Rating">SPref_Rating</string>
