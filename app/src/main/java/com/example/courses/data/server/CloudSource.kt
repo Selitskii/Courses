@@ -50,4 +50,12 @@ class CloudSource:PersonCloudRepository {
         return personsResponse
     }
 
+    override suspend fun getPersonSM(): List<Person> {
+        val persons:List<Person>
+        withContext(Dispatchers.IO){
+            persons = apiService.getPersonsSM()
+        }
+        return persons
+    }
+
 }

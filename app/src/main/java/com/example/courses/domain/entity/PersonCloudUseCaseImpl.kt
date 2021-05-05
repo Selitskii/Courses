@@ -12,6 +12,10 @@ class PersonCloudUseCaseImpl(
         return personCloudRepository.getPersonsCL()
     }
 
+    override suspend fun getPersonsSM(): List<Person> {
+        return personCloudRepository.getPersonSM()
+    }
+
     override suspend fun addPersonCL(person: Person): RequestResult<Person> {
         return personCloudRepository.addPersonCL(person)
     }

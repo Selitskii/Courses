@@ -11,6 +11,9 @@ interface PersonDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(person: Person)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertList(persons: List<Person>)
+
     @Delete
     fun delete(person: Person)
 

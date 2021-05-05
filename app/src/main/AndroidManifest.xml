@@ -10,9 +10,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Courses">
-        <service android:name=".AddPersonService"
-            android:enabled="true">
-        </service>
+        <service android:name=".presentation.services.AddPersonService"
+            android:enabled="true"/>
         <activity android:name=".presentation.ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

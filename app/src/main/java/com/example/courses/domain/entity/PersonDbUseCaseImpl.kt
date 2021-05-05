@@ -7,6 +7,8 @@ import com.example.courses.domain.use_case.PersonsCloudUseCase
 import com.example.courses.domain.use_case.PersonDbUseCase
 import io.reactivex.Observable
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.forEach
 
 class PersonDbUseCaseImpl(
     val personRepository: PersonRepository,
@@ -25,6 +27,10 @@ class PersonDbUseCaseImpl(
 
     override suspend fun addPersonDB(person: Person) {
         personRepository.addPersonDB(person)
+    }
+
+    override suspend fun addListPerson(list: List<Person>) {
+        personRepository.addListPerson(list)
     }
 
 

@@ -28,7 +28,6 @@ class PersonAdapter(
         viewHolder.text.text = getItem(position).toString()
         viewHolder.itemView.setOnClickListener {
             listener?.onClick(item)
-
         }
 
     }

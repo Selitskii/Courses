@@ -24,6 +24,13 @@ class PersonData(context: Context) : PersonRepository {
         }
     }
 
+    override suspend fun addListPerson(list: List<Person>) {
+        withContext(Dispatchers.IO){
+            personDao.insertList(list)
+        }
+    }
+
+
     override suspend fun removePersonDB(person: Person) {
         withContext(Dispatchers.IO){
             personDao.delete(person)

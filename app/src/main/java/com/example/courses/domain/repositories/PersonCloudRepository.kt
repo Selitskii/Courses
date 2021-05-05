@@ -7,5 +7,6 @@ interface PersonCloudRepository {
 
     suspend fun getPersonsCL():RequestResult<List<Person>>
     suspend fun addPersonCL(person:Person):RequestResult<Person>
+    suspend fun getPersonSM():List<Person>
 
 }

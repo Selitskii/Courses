@@ -12,12 +12,13 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.core.app.JobIntentService
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.example.courses.AddPersonService
+import com.example.courses.presentation.services.AddPersonService
 import com.example.courses.Const
 import com.example.courses.Dependencies
 import com.example.courses.presentation.adapter.PersonAdapter
@@ -25,7 +26,6 @@ import com.example.courses.presentation.viewmodel.MainViewModel
 import com.example.courses.R
 import com.example.courses.presentation.adapter.ItemClickListener
 import com.example.courses.domain.entity.Person
-import kotlin.reflect.KProperty
 
 
 class MainFragment : Fragment(), ItemClickListener {
@@ -47,16 +47,16 @@ class MainFragment : Fragment(), ItemClickListener {
     private var adapterFilter = PersonAdapter()
     private val batery = BatteryBroadcastReceiver()
     private val addedPersonBroadcast = PersonAddBroadcastReviever()
-    private var personService:AddPersonService?=null
+    private var personService: AddPersonService? = null
     private var boundToPersonService = false
     private var currentPersonFlag = false
 
-    private val serviceConnection = object : ServiceConnection{
+    private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             boundToPersonService = true
             personService = (service as AddPersonService.PersonServiceBinder).getService()
-            if(currentPersonFlag){
-                personService?.startAddPersonProcess(viewModel.name,viewModel.rating.toInt())
+            if (currentPersonFlag) {
+                personService?.startAddPersonProcess(viewModel.name, viewModel.rating.toInt())
                 currentPersonFlag = false
             }
         }
@@ -67,6 +67,24 @@ class MainFragment : Fragment(), ItemClickListener {
         }
 
     }
+
+    /* private fun handleAtPersonClick() {
+         if (boundToPersonService) {
+             personService?.startAddPersonProcess(viewModel.name, viewModel.rating.toInt())
+         } else {
+             val addPersonServiceIntent =
+                 Intent(requireContext(), AddPersonService::class.java).apply {
+                     this.putExtra(Const.NAME, viewModel.name)
+                     this.putExtra(Const.RATING, viewModel.rating.toInt())
+                     currentPersonFlag = true
+                 }
+             requireActivity().bindService(
+                 addPersonServiceIntent,
+                 serviceConnection,
+                 Context.BIND_AUTO_CREATE
+             )
+         }
+     }*/
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -80,7 +98,7 @@ class MainFragment : Fragment(), ItemClickListener {
 
         val factory = Factory(Dependencies.getPersonUseCase(requireContext()))
 
-        viewModel = ViewModelProvider(this,factory).get(MainViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory).get(MainViewModel::class.java)
 
         name.doAfterTextChanged {
             viewModel.name = it.toString()
@@ -91,10 +109,9 @@ class MainFragment : Fragment(), ItemClickListener {
         }
 
         btnAddPerson.setOnClickListener {
-/*
             viewModel.addPersonVM()
-*/
-            handleAtPersonClick()
+
+            /*handleAtPersonClick()*/
         }
 
         btnFilterName.setOnClickListener {
@@ -117,22 +134,41 @@ class MainFragment : Fragment(), ItemClickListener {
 
         swipe.setOnRefreshListener {
             viewModel.updatePerosn()
-            adapter.setData(viewModel.getPersonsVM().value!!)
+            viewModel.init()
+            //adapter.setData(viewModel.getPersonsVM().value!!)
+            /*  Intent(context,GetPersonService::class.java).also {
+                  JobIntentService.enqueueWork(requireContext(),
+                  GetPersonService::class.java,
+                  123,
+                  it)
+              }*/
+
             swipe.isRefreshing = false
         }
 
-        viewModel.getError().observe(viewLifecycleOwner,{
-            Toast.makeText(requireContext(),viewModel.getError().toString(),Toast.LENGTH_SHORT).show()
+        viewModel.getError().observe(viewLifecycleOwner, {
+            Toast.makeText(requireContext(), viewModel.getError().toString(), Toast.LENGTH_SHORT)
+                .show()
         })
 
-       /* viewModel.getPersonDataReady().observe(viewLifecycleOwner,{
-            val addPersonServiceIntent =
-                Intent(requireContext(),AddPersonService::class.java).apply {
-                    this.putExtra(AddPersonService.NAME,it.first)
-                    this.putExtra(AddPersonService.RATING,it.second)
-                }
-            requireActivity().bindService(addPersonServiceIntent,serviceConnection,Context.BIND_AUTO_CREATE)
-        })*/
+
+        viewModel.getPersonDataReady().observe(viewLifecycleOwner, {
+            if (boundToPersonService) {
+                personService?.startAddPersonProcess(it.first, it.second)
+            } else {
+                val addPersonServiceIntent =
+                    Intent(requireContext(), AddPersonService::class.java).apply {
+                        this.putExtra(Const.NAME, it.first)
+                        this.putExtra(Const.RATING, it.second)
+                        currentPersonFlag = true
+                    }
+                requireActivity().bindService(
+                    addPersonServiceIntent,
+                    serviceConnection,
+                    Context.BIND_AUTO_CREATE
+                )
+            }
+        })
 
     }
 
@@ -148,8 +184,8 @@ class MainFragment : Fragment(), ItemClickListener {
         swipe = view.findViewById(R.id.swipe)
         fullList.layoutManager = LinearLayoutManager(requireContext())
         fullList.adapter = adapter
-        adapter.setListener(this)
         filterList.layoutManager = LinearLayoutManager(requireContext())
+        adapterFilter.setListener(this)
         filterList.adapter = adapterFilter
     }
 
@@ -158,15 +194,20 @@ class MainFragment : Fragment(), ItemClickListener {
     }
 
     override fun onDestroyView() {
-        adapter.setListener(null)
-        requireActivity().unbindService(serviceConnection)
         super.onDestroyView()
+        adapter.setListener(null)
+        if (personService != null) {
+            requireActivity().unbindService(serviceConnection)
+        }
     }
 
     override fun onStart() {
         super.onStart()
         requireActivity().registerReceiver(batery, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        requireActivity().registerReceiver(addedPersonBroadcast, IntentFilter(Const.ADD_PERSON_ACTION))
+        requireActivity().registerReceiver(
+            addedPersonBroadcast,
+            IntentFilter(Const.ADD_PERSON_ACTION)
+        )
 
     }
 
@@ -176,19 +217,6 @@ class MainFragment : Fragment(), ItemClickListener {
         requireActivity().unregisterReceiver(addedPersonBroadcast)
     }
 
-    private fun handleAtPersonClick(){
-        if (boundToPersonService) {
-            personService?.startAddPersonProcess(viewModel.name,viewModel.rating.toInt())
-        } else {
-            val addPersonServiceIntent =
-                Intent(requireContext(),AddPersonService::class.java).apply {
-                    this.putExtra(Const.NAME,viewModel.name)
-                    this.putExtra(Const.RATING,viewModel.rating.toInt())
-                    currentPersonFlag = true
-                }
-            requireActivity().bindService(addPersonServiceIntent,serviceConnection,Context.BIND_AUTO_CREATE)
-        }
-    }
 
     inner class BatteryBroadcastReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -197,7 +225,7 @@ class MainFragment : Fragment(), ItemClickListener {
         }
     }
 
-    inner class PersonAddBroadcastReviever: BroadcastReceiver(){
+    inner class PersonAddBroadcastReviever : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             viewModel.updatePerosn()
         }

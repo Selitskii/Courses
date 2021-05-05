@@ -22,4 +22,8 @@ interface APIService {
     @DELETE("deletePerson")
     suspend fun deletePerson(@Body person:Person):Response<Person>
 
+    @GET("getPersons")
+    suspend fun getPersonsSM(): List<Person>
+
+
 }

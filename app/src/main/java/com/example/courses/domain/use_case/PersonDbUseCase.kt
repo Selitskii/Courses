@@ -11,5 +11,6 @@ interface PersonDbUseCase {
     fun getPersonsRXDB(): Observable<List<Person>>
     suspend fun deletePersonDB(person:Person)
     suspend fun addPersonDB(person:Person)
+    suspend fun addListPerson(list:List<Person>)
 
 }

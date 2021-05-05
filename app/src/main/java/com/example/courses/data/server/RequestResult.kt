@@ -1,5 +1,6 @@
 package com.example.courses.data.server
 
+import com.example.courses.domain.entity.Person
 import com.google.gson.GsonBuilder
 import retrofit2.Response
 import retrofit2.Retrofit
