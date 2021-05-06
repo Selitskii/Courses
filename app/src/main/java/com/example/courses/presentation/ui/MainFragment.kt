@@ -2,6 +2,7 @@ package com.example.courses.presentation.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
+
 import android.content.*
 import android.content.pm.PackageManager
 import android.hardware.Sensor
@@ -63,6 +64,7 @@ class MainFragment : Fragment(), ItemClickListener {
     private var boundToPersonService = false
     private var currentPersonFlag = false
 
+    private val REQUEST_CODE_PERMISSION_LOCATION=4
     private lateinit var locationManager:LocationManager
     private  lateinit var sensorManager: SensorManager
     private var sensor:Sensor? = null
@@ -75,17 +77,17 @@ class MainFragment : Fragment(), ItemClickListener {
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         }
     }
-    private val locationListener:LocationListener= object : LocationListener {
+    private val locationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
-            rating.setText("${location.latitude.toInt()*100+location.longitude.toInt()}")
-            Log.d("location","${location.latitude.toInt()*100+location.longitude.toInt()}")
+            rating.setText("${location.latitude.toInt() * 100 + location.longitude.toInt()}")
         }
 
         @SuppressLint("MissingPermission")
         override fun onProviderEnabled(provider: String) {
             super.onProviderEnabled(provider)
-            val location= locationManager.getLastKnownLocation(provider)
+            val location = locationManager.getLastKnownLocation(provider)
         }
+
     }
 
 
@@ -219,7 +221,8 @@ class MainFragment : Fragment(), ItemClickListener {
         }
         sensor=sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
-        locationManager=requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        locationManager =
+            requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
     }
 
@@ -259,27 +262,43 @@ class MainFragment : Fragment(), ItemClickListener {
             addedPersonBroadcast,
             IntentFilter(Const.ADD_PERSON_ACTION)
         )
-        sensorManager.registerListener(acselerometorListener,sensor,SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(
+            acselerometorListener,
+            sensor,
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
 
         if (ActivityCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+            ) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                REQUEST_CODE_PERMISSION_LOCATION
+            )
+
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,1000L,10F,locationListener)
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,1000L,10F,locationListener)
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                1000L,
+                10F,
+                locationListener
+            )
+            locationManager.requestLocationUpdates(
+                LocationManager.NETWORK_PROVIDER,
+                1000L,
+                10F,
+                locationListener
+            )
+
     }
 
     override fun onStop() {
