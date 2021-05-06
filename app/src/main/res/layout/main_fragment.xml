@@ -4,12 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    >
+
 
     <EditText
         android:id="@+id/edit_Text_First"
         style="@style/input"
         android:layout_marginTop="68dp"
+        android:inputType="text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -24,55 +27,67 @@
         app:layout_constraintTop_toBottomOf="@+id/edit_Text_First" />
 
     <Button
-        android:id="@+id/creat"
+        android:id="@+id/addPerson"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="84dp"
-        android:text="Calculate"
+        android:text="@string/addPerson"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edit_Text_Second" />
 
-    <TextView
-        android:id="@+id/state_text"
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/filter_list"
+        app:layout_constraintTop_toBottomOf="@id/button_filter_name"
+        android:layout_width="match_parent"
+        android:layout_height="0dp">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/full_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/filter_list"
+        app:layout_constraintTop_toBottomOf="@+id/button_filter_name"
+        app:layout_constraintBottom_toTopOf="@id/filter_list"/>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <Button
+        android:id="@+id/button_filter_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:text="name filter"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/creat" />
+        app:layout_constraintTop_toBottomOf="@+id/addPerson"
+        app:layout_constraintEnd_toStartOf="@id/button_filter_rating"/>
 
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/persons"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@color/purple_200"
+    <Button
+        android:id="@+id/button_filter_rating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="10dp"
+        android:text="rating filter"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/view"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/state_text" />
-
-    <View
-        android:id="@+id/view"
-        android:layout_width="match_parent"
-        android:layout_height="5dp"
-        android:background="@color/black"
-        app:layout_constraintBottom_toTopOf="@+id/personsFiltered"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/persons" />
+        app:layout_constraintStart_toEndOf="@+id/button_filter_name"
+        app:layout_constraintTop_toBottomOf="@+id/addPerson" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/personsFiltered"
+        android:id="@+id/filter_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@color/purple_200"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view" />
+        app:layout_constraintTop_toBottomOf="@id/swipe"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

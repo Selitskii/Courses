@@ -1,12 +1,9 @@
-package com.example.courses
+package com.example.courses.presentation.ui
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import androidx.room.Room
-import com.example.clearav.presentation.ui.MainFragment
-import com.example.courses.db.ApplicationDataBase
-import com.example.courses.entity.Person
+import androidx.appcompat.app.AppCompatActivity
+import com.example.courses.R
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,4 +16,5 @@ class MainActivity : AppCompatActivity() {
                 .commitNow()
         }
     }
+
 }

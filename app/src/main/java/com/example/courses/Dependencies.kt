@@ -1,23 +1,27 @@
 package com.example.courses
 
-import android.content.SharedPreferences
-import com.example.courses.UseCase.*
-import com.example.courses.data.SharedPreferencesLocalSouse
-import com.example.courses.db.LocalDataBaseSource
+import android.content.Context
+import com.example.courses.data.db.PersonData
+import com.example.courses.data.server.CloudSource
+import com.example.courses.domain.entity.PersonCloudUseCaseImpl
+import com.example.courses.domain.entity.PersonDbUseCaseImpl
+import com.example.courses.domain.repositories.PersonCloudRepository
+import com.example.courses.domain.repositories.PersonRepository
+import com.example.courses.domain.use_case.PersonsCloudUseCase
+import com.example.courses.domain.use_case.PersonDbUseCase
 
 object Dependencies {
-    private val personRepository: PersonRepository by lazy { LocalDataBaseSource(App.instance) }
-    private val sharedPreferencesRepository: SharedPreferencesRepository by lazy {
-        SharedPreferencesLocalSouse(
-            App.instance
-        )
+
+    private val cloudSource: PersonCloudRepository by lazy { CloudSource() }
+
+    private fun getPersonRepository(context:Context): PersonRepository{
+        return PersonData(context)
     }
 
-    fun getPersonUseCase(): PersonUseCase {
-        return PersonUseCaseImpl(personRepository)
-    }
+    fun getPersonUseCase(context: Context): PersonDbUseCase =
+        PersonDbUseCaseImpl(getPersonRepository(context))
 
-    fun getSharedPreferences(): SharedPreferencesUseCase {
-        return SharedPreferencesUseCaseImpl(sharedPreferencesRepository)
-    }
+    fun getPersonCloudUseCase(): PersonsCloudUseCase =
+        PersonCloudUseCaseImpl(cloudSource)
+
 }

@@ -1,7 +1,7 @@
-package com.example.courses.db
+package com.example.courses.data.db
 
 import androidx.room.*
-import com.example.courses.entity.Person
+import com.example.courses.domain.entity.Person
 import io.reactivex.Observable
 import kotlinx.coroutines.flow.Flow
 
@@ -11,13 +11,15 @@ interface PersonDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(person: Person)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertList(persons: List<Person>)
+
     @Delete
     fun delete(person: Person)
 
-    @Query("Select * From Person")
+    @Query("Select * from Person ")
     fun selectAll(): Flow<List<Person>>
 
     @Query("Select * From Person")
-    fun selectAllRx(): Observable<List<Person>>
-
+    fun selectAllRX(): Observable<List<Person>>
 }
