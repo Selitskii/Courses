@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.JobIntentService
 import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.work.CoroutineWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
@@ -22,12 +23,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class GetPersonsWorker(private val context: Context, workerParameters: WorkerParameters) :
-    Worker(context, workerParameters) {
+    CoroutineWorker(context, workerParameters) {
 
     private val personCloudUseCase: PersonsCloudUseCase = Dependencies.getPersonCloudUseCase()
     private val ioScope = CoroutineScope(Dispatchers.Main + Job())
 
-    override fun doWork(): Result {
+    override suspend fun doWork(): Result {
           /*Intent(context, GetPersonService::class.java).also {
               JobIntentService.enqueueWork(
                   context,
@@ -38,15 +39,12 @@ class GetPersonsWorker(private val context: Context, workerParameters: WorkerPar
           }*/
 
 
-        var result: Result = Result.success()
+        val result: Result
 
-
-        ioScope.launch {
             result = if (personCloudUseCase.getPersonsCL() is RequestResult.Success) {
                 Toast.makeText(context,"YYYYYRRRRRAAAA!",Toast.LENGTH_SHORT).show()
                 Result.success()
             } else Result.failure()
-        }
         return result
     }
 
