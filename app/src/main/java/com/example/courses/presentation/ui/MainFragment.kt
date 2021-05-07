@@ -1,10 +1,18 @@
 package com.example.courses.presentation.ui
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.content.*
+import android.content.pm.PackageManager
+import android.hardware.*
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.BatteryManager
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +20,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
-import androidx.core.app.JobIntentService
+import androidx.core.app.ActivityCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,15 +32,24 @@ import com.example.courses.Dependencies
 import com.example.courses.presentation.adapter.PersonAdapter
 import com.example.courses.presentation.viewmodel.MainViewModel
 import com.example.courses.R
+import com.example.courses.data.server.CloudSource
 import com.example.courses.presentation.adapter.ItemClickListener
 import com.example.courses.domain.entity.Person
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class MainFragment : Fragment(), ItemClickListener {
 
     companion object {
         fun newInstance() = MainFragment()
     }
+
+    @Inject lateinit var cloudSource: CloudSource
 
     private lateinit var viewModel: MainViewModel
     private lateinit var name: EditText
@@ -50,7 +67,34 @@ class MainFragment : Fragment(), ItemClickListener {
     private var personService: AddPersonService? = null
     private var boundToPersonService = false
     private var currentPersonFlag = false
+    lateinit var sensorManager:SensorManager
+    private var sensorr:Sensor?=null
+    lateinit var locationManager:LocationManager
+    private var locationListener:LocationListener = object : LocationListener{
+        override fun onLocationChanged(location: Location) {
+            rating.setText("${location.latitude.toInt() * 100 + location.longitude.toInt()}")
+        }
 
+
+        @SuppressLint("MissingPermission")
+        override fun onProviderEnabled(provider: String) {
+            super.onProviderEnabled(provider)
+            val location = locationManager.getLastKnownLocation(provider)
+        }
+    }
+    private var acselerometrListener:SensorEventListener = object :SensorEventListener{
+        override fun onSensorChanged(event: SensorEvent?) {
+            if(event==null){
+                return
+            }
+            name.setText("${event.values[0]} ${event.values[1]} ${event.values[2]}")
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+
+        }
+
+    }
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             boundToPersonService = true
@@ -100,9 +144,9 @@ class MainFragment : Fragment(), ItemClickListener {
 
         viewModel = ViewModelProvider(this, factory).get(MainViewModel::class.java)
 
-        name.doAfterTextChanged {
+        /*name.doAfterTextChanged {
             viewModel.name = it.toString()
-        }
+        }*/
 
         rating.doAfterTextChanged {
             viewModel.rating = it.toString()
@@ -124,7 +168,7 @@ class MainFragment : Fragment(), ItemClickListener {
         }
 
 
-        viewModel.getPersonsVM().observe(viewLifecycleOwner, Observer {
+        viewModel.getPersonsVM().observe(viewLifecycleOwner, {
             adapter.setData(it)
         })
 
@@ -170,6 +214,19 @@ class MainFragment : Fragment(), ItemClickListener {
             }
         })
 
+        sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+        val sensors = sensorManager.getSensorList(Sensor.TYPE_ALL)
+        sensors.forEach { sensor ->
+            val sensorInformation =
+                "name = ${sensor.name}, type = ${sensor.type}\nvendor = ${sensor.vendor}" +
+                        " ,version = ${sensor.version}\nmax = ${sensor.maximumRange} , power = ${sensor.power}" +
+                        ", resolution = ${sensor.resolution}\n--------------------------------------\n"
+            Log.d("Sensor", sensorInformation)
+        }
+        sensorr = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
+        locationManager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -187,6 +244,9 @@ class MainFragment : Fragment(), ItemClickListener {
         filterList.layoutManager = LinearLayoutManager(requireContext())
         adapterFilter.setListener(this)
         filterList.adapter = adapterFilter
+        /*GlobalScope.launch{
+            cloudSource.addPersonCL(Person("Ivgen",12))
+        }*/
     }
 
     override fun onClick(person: Person) {
@@ -203,18 +263,33 @@ class MainFragment : Fragment(), ItemClickListener {
 
     override fun onStart() {
         super.onStart()
-        requireActivity().registerReceiver(batery, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+       /* requireActivity().registerReceiver(batery, IntentFilter(Intent.ACTION_BATTERY_CHANGED))*/
         requireActivity().registerReceiver(
             addedPersonBroadcast,
             IntentFilter(Const.ADD_PERSON_ACTION)
         )
+        sensorManager.registerListener(acselerometrListener,sensorr,SensorManager.SENSOR_DELAY_NORMAL)
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
 
+            return
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,100L,5F,locationListener)
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,100L,5f,locationListener)
     }
 
     override fun onStop() {
         super.onStop()
-        requireActivity().unregisterReceiver(batery)
+       /* requireActivity().unregisterReceiver(batery)*/
         requireActivity().unregisterReceiver(addedPersonBroadcast)
+        sensorManager.unregisterListener(acselerometrListener)
+        locationManager.removeUpdates(locationListener)
     }
 
 

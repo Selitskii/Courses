@@ -8,5 +8,6 @@ interface PersonsCloudUseCase {
     suspend fun addPersonCL(person:Person):RequestResult<Person>
     suspend fun getPersonsCL(): RequestResult<List<Person>>
     suspend fun getPersonsSM():List<Person>
+    fun addPerson(name:String,rating:Int)
 
 }

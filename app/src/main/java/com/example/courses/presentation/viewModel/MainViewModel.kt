@@ -1,31 +1,31 @@
 package com.example.courses.presentation.viewmodel
 
-import android.content.Context
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.ListenableWorker
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.example.courses.Dependencies
 import com.example.courses.data.server.RequestResult
 import com.example.courses.domain.entity.Person
 import com.example.courses.domain.use_case.PersonDbUseCase
 import com.example.courses.domain.use_case.PersonsCloudUseCase
-import com.example.courses.presentation.worker.GetPersonsWorker
-import kotlinx.coroutines.Dispatchers
+import com.example.courses.data.system.worker.GetPersonsWorker
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class MainViewModel(
+@HiltViewModel
+class MainViewModel (
     val personDbUseCase: PersonDbUseCase
 ) : ViewModel() {
 
-    private val personCloudUseCase: PersonsCloudUseCase by lazy { Dependencies.getPersonCloudUseCase() }
+
+    @Inject lateinit var personCloudUseCase: PersonsCloudUseCase
+
+   /* private val personCloudUseCase: PersonsCloudUseCase by lazy { Dependencies.getPersonCloudUseCase() }*/
 
     var name: String = ""
     var rating: String = ""
