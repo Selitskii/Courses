@@ -2,7 +2,6 @@ package com.example.courses.presentation.ui
 
 import android.content.*
 import android.os.BatteryManager
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.os.IBinder
 import androidx.fragment.app.Fragment
@@ -12,7 +11,6 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
-import androidx.core.app.JobIntentService
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,6 +24,7 @@ import com.example.courses.presentation.viewmodel.MainViewModel
 import com.example.courses.R
 import com.example.courses.presentation.adapter.ItemClickListener
 import com.example.courses.domain.entity.Person
+import org.koin.android.viewmodel.ext.android.viewModel
 
 
 class MainFragment : Fragment(), ItemClickListener {
@@ -34,7 +33,7 @@ class MainFragment : Fragment(), ItemClickListener {
         fun newInstance() = MainFragment()
     }
 
-    private lateinit var viewModel: MainViewModel
+    private val viewModel: MainViewModel by viewModel()
     private lateinit var name: EditText
     private lateinit var rating: EditText
     private lateinit var swipe: SwipeRefreshLayout
@@ -96,9 +95,13 @@ class MainFragment : Fragment(), ItemClickListener {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+/*
         val factory = Factory(Dependencies.getPersonUseCase(requireContext()))
+*/
 
+/*
         viewModel = ViewModelProvider(this, factory).get(MainViewModel::class.java)
+*/
 
         name.doAfterTextChanged {
             viewModel.name = it.toString()

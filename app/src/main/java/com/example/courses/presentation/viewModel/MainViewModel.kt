@@ -22,10 +22,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainViewModel(
-    val personDbUseCase: PersonDbUseCase
+    val personDbUseCase: PersonDbUseCase,
+    val personCloudUseCase:PersonsCloudUseCase
 ) : ViewModel() {
 
+/*
     private val personCloudUseCase: PersonsCloudUseCase by lazy { Dependencies.getPersonCloudUseCase() }
+*/
 
     var name: String = ""
     var rating: String = ""

@@ -6,12 +6,15 @@ import com.example.courses.domain.use_case.PersonDbUseCase
 import com.example.courses.domain.use_case.PersonsCloudUseCase
 import com.example.courses.presentation.viewmodel.MainViewModel
 
-class Factory(val dbUseCase: PersonDbUseCase): ViewModelProvider.Factory {
+/*
+class Factory(val dbUseCase: PersonDbUseCase,
+              val cloudUseCase:PersonsCloudUseCase):
+    ViewModelProvider.Factory {
 
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         if(modelClass.isAssignableFrom(MainViewModel::class.java)){
-            return MainViewModel(dbUseCase) as T
+            return MainViewModel(dbUseCase,cloudUseCase) as T
         } else throw Exception()
     }
 
-}
+}*/
