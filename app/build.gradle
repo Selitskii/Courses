@@ -68,4 +68,9 @@ dependencies {
 
     implementation "androidx.work:work-runtime-ktx:2.6.0-alpha02"
     implementation "android.arch.work:work-runtime:1.0.1"
+
+    // Koin for Android
+    implementation "org.koin:koin-android:1.0.2"
+    // or Koin for view model features
+    implementation "org.koin:koin-android-viewmodel:1.0.2"
 }
